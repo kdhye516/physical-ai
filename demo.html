@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>맘캠 데모 | MomCam Edge Guard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-highest":"#202c42","secondary-fixed-dim":"#88b4cc","on-background":"#e0e8f0","on-primary-container":"#c8eaff","surface-container-high":"#1a2438","tertiary":"#c8a0f0","error":"#ff6b6b","primary":"#7dd3fc","surface":"#0f1524","tertiary-container":"#3d2060","secondary-container":"#1a3a4e","surface-container":"#141c2e","on-surface-variant":"#a0b4c4","outline-variant":"#2a3a48","secondary":"#88b4cc","outline":"#4a6070","on-primary":"#001f2e","on-error":"#1a0000","secondary-fixed":"#c0d8e8","on-surface":"#e0e8f0","surface-container-low":"#111828","on-secondary-container":"#c0d8e8","error-container":"#3d1414","surface-container-lowest":"#0a0e1a","primary-container":"#0e4d6e","background":"#0a0e1a","warn":"#f5c26b"},borderRadius:{DEFAULT:"0.5rem",lg:"1rem",xl:"1.5rem",full:"9999px"},fontFamily:{body:["Inter","Pretendard","Apple SD Gothic Neo","Malgun Gothic","system-ui","sans-serif"]}}}}
+</script>
+<style>
+/* Layout: fixed glass header + tabbed single-page app; dark IR-monitor world, single deliberate theme */
+:root{--bg:#0a0e1a;--fg:#e0e8f0;--accent:#7dd3fc;--alert:#ff6b6b;color-scheme:dark}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:Inter,"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;overscroll-behavior:none}
+.material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.fill-icon{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
+.site-header{padding-top:env(safe-area-inset-top,0px)}
+input[type=range]{accent-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toggle{position:relative;width:44px;height:24px;border-radius:999px;background:#202c42;transition:background .2s;flex-shrink:0;cursor:pointer}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#e0e8f0;transition:transform .2s}
+.toggle[aria-checked=true]{background:var(--accent)}
+.toggle[aria-checked=true]::after{transform:translateX(20px);background:#001f2e}
+.alarm-flash{animation:alarm 0.8s ease-in-out infinite}
+@keyframes alarm{0%,100%{box-shadow:inset 0 0 0 0 rgba(255,107,107,0)}50%{box-shadow:inset 0 0 0 6px rgba(255,107,107,.7)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body style="margin:0">
+<div class="bg-background font-body text-on-surface antialiased min-h-screen flex flex-col">
+
+<!-- HEADER -->
+<header class="site-header fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-primary/10">
+  <div class="h-16 lg:h-20 w-full px-4 lg:px-10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-6 min-w-0">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+          <span class="material-symbols-outlined fill-icon text-[22px]">nest_cam_iq</span>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-bold text-lg tracking-tight text-on-surface flex items-center gap-1.5">MomCam <span class="text-[11px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">Edge Guard</span></span>
+          <span class="text-[11px] text-on-surface-variant font-medium truncate">아기 안심 실시간 모니터링</span>
+        </div>
+      </div>
+      <div class="hidden 2xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container/60 border border-primary/15 text-xs text-primary">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-medium">온디바이스 엣지 AI 동작 중 · 로컬 안심 저장</span>
+      </div>
+    </div>
+    <nav class="hidden lg:flex items-center gap-1.5 p-1.5 rounded-xl bg-surface-container-low/80 border border-outline-variant/30" id="desktop-nav">
+      <a class="nav-link px-4 py-2 rounded-lg text-sm transition-all duration-200" data-page="live" href="#live">실시간 모니터링</a>
+      <a class="nav-link px-4 py-2 rounded-lg text-sm transition-all duration-200" data-page="timeline" href="#timeline">이벤트 타임라인</a>
+      <a class="nav-link px-4 py-2 rounded-lg text-sm transition-all duration-200" data-page="settings" href="#settings">감지 및 안전 알림 설정</a>
+      <a class="nav-link px-4 py-2 rounded-lg text-sm transition-all duration-200" data-page="privacy" href="#privacy">기기 및 사생활 보호 관리</a>
+    </nav>
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+      <a href="index.html" class="hidden md:flex items-center gap-1 px-3 py-2 rounded-xl text-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-outline-variant/30"><span class="material-symbols-outlined text-[16px]">arrow_back</span>제품 소개</a>
+      <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container-high/60 border border-outline-variant/40 text-xs">
+        <div class="flex flex-col text-left">
+          <span class="text-[10px] text-on-surface-variant">연결 상태</span>
+          <span class="font-medium text-on-surface flex items-center gap-1.5"><span class="inline-block w-1.5 h-1.5 rounded-full bg-primary" id="conn-dot"></span><span id="conn-label">아가방 침대 정면 (1080p IR)</span></span>
+        </div>
+      </div>
+      <button class="p-2.5 rounded-xl bg-surface-container/60 hover:bg-surface-container-high border border-outline-variant/30 text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center" id="sound-toggle" title="알림음 끄기" type="button" aria-pressed="true">
+        <span class="material-symbols-outlined text-[20px]">volume_up</span>
+      </button>
+      <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(125,211,252,0.25)]" title="보호자 계정">
+        <span class="material-symbols-outlined text-on-primary text-[20px]">person</span>
+      </div>
+    </div>
+  </div>
+  <!-- mobile nav -->
+  <nav class="lg:hidden flex gap-1.5 px-4 pb-3 overflow-x-auto no-scrollbar" id="mobile-nav">
+    <a class="nav-link shrink-0 px-3.5 py-1.5 rounded-lg text-xs transition-all" data-page="live" href="#live">실시간 모니터링</a>
+    <a class="nav-link shrink-0 px-3.5 py-1.5 rounded-lg text-xs transition-all" data-page="timeline" href="#timeline">이벤트 타임라인</a>
+    <a class="nav-link shrink-0 px-3.5 py-1.5 rounded-lg text-xs transition-all" data-page="settings" href="#settings">감지·알림 설정</a>
+    <a class="nav-link shrink-0 px-3.5 py-1.5 rounded-lg text-xs transition-all" data-page="privacy" href="#privacy">기기·사생활 보호</a>
+  </nav>
+</header>
+
+<main class="w-full pt-[118px] lg:pt-20 bg-background flex-1 flex flex-col">
+
+<!-- ============ PAGE: LIVE ============ -->
+<section data-view="live" class="w-full px-4 sm:px-6 lg:px-10 py-6 max-w-[1720px] mx-auto space-y-6">
+
+  <div class="rounded-xl bg-error-container/40 border border-error/20 p-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+    <div class="flex items-start sm:items-center gap-3 min-w-0">
+      <div class="p-2 rounded-lg bg-error/15 text-error flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-xl">health_and_safety</span></div>
+      <div class="flex flex-col min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-error/20 text-error">안전 필수 고지</span>
+          <span class="text-sm font-semibold text-on-surface">맘캠(MomCam)은 가정용 보조 모니터링 기기이며 의료기기가 아닙니다.</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-0.5">본 기기는 영아돌연사증후군(SIDS) 등의 질병 진단이나 예방 목적으로 사용될 수 없으며, 감지 알림 발생 여부와 무관하게 보호자의 주기적인 직접 육안 확인이 필수적입니다.</p>
+      </div>
+    </div>
+    <button class="open-guide text-xs px-3 py-1.5 rounded-lg bg-surface-container-high/80 hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-1.5 self-end md:self-auto shrink-0" type="button">
+      <span>안전 가이드라인 전체보기</span><span class="material-symbols-outlined text-[14px]">menu_book</span>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+    <!-- LEFT -->
+    <div class="xl:col-span-8 flex flex-col space-y-4 min-w-0">
+      <div class="relative w-full rounded-2xl bg-surface-container-low/90 border border-primary/15 shadow-[0_0_40px_rgba(125,211,252,0.04)] overflow-hidden flex flex-col" id="stream-card">
+        <div class="absolute top-0 left-0 right-0 z-20 p-3 sm:p-4 bg-gradient-to-b from-background/90 via-surface/60 to-transparent flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span></span>
+            <span class="text-xs font-bold text-on-surface tracking-wider uppercase">LIVE FEED</span>
+            <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-[11px] font-medium">
+              <span class="material-symbols-outlined text-[14px]">lock</span><span>온디바이스 AI 보호 중 (영상 클라우드 미전송)</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 sm:gap-3 text-xs">
+            <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-surface-container-high/80 border border-primary/10 text-on-surface-variant mono text-[11px]">
+              <span class="text-primary font-semibold">1080p IR</span><span class="text-outline">/</span><span>30 FPS</span><span class="text-outline">/</span><span class="text-primary" id="latency">120ms 지연</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-high/80 border border-primary/10 text-on-surface-variant" title="실시간 실내 음향 레벨">
+              <span class="material-symbols-outlined text-[15px] text-primary">mic</span>
+              <div class="flex items-end gap-0.5 h-3.5 w-8 pb-0.5" id="mic-bars">
+                <div class="w-1 bg-primary rounded-full transition-all" style="height:6px"></div>
+                <div class="w-1 bg-primary rounded-full transition-all" style="height:10px"></div>
+                <div class="w-1 bg-primary/40 rounded-full transition-all" style="height:4px"></div>
+                <div class="w-1 bg-primary/20 rounded-full transition-all" style="height:2px"></div>
+              </div>
+              <span class="text-[10px] mono text-primary" id="db-badge">32dB</span>
+            </div>
+            <button class="px-3 py-1 rounded-lg bg-primary-container/80 hover:bg-primary text-on-primary-container hover:text-on-primary transition-all duration-200 border border-primary/30 flex items-center gap-1.5 select-none touch-none" id="talkback-btn" type="button" title="누르고 있는 동안 아기에게 말할 수 있어요">
+              <span class="material-symbols-outlined text-[15px]">record_voice_over</span><span class="text-xs font-semibold" id="talkback-label">양방향 대화</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Viewport -->
+        <div class="relative w-full aspect-[16/10] max-w-full bg-surface-container-lowest overflow-hidden flex items-center justify-center select-none" id="viewport">
+          <div class="absolute inset-0" id="main-scene"></div>
+          <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-background/20 to-background/80"></div>
+          <div class="absolute inset-4 sm:inset-6 border border-primary/10 rounded-xl pointer-events-none flex flex-col justify-between">
+            <div class="flex justify-between items-start p-2"><div class="w-4 h-4 border-t-2 border-l-2 border-primary/50"></div><div class="w-4 h-4 border-t-2 border-r-2 border-primary/50"></div></div>
+            <div class="flex justify-between items-end p-2"><div class="w-4 h-4 border-b-2 border-l-2 border-primary/50"></div><div class="w-4 h-4 border-b-2 border-r-2 border-primary/50"></div></div>
+          </div>
+
+          <!-- AI bounding box -->
+          <div class="absolute top-[28%] left-[32%] w-[38%] h-[48%] pointer-events-none" id="ai-box">
+            <div class="w-full h-full rounded-lg border-2 border-primary/80 bg-primary/5 shadow-[0_0_25px_rgba(125,211,252,0.25)] relative flex flex-col justify-between p-2 transition-colors" id="ai-box-inner">
+              <div class="absolute -top-7 left-0 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface/90 border border-primary/40 text-primary shadow-lg whitespace-nowrap" id="pose-badge">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping" id="pose-dot"></span>
+                <span class="text-[11px] font-semibold tracking-tight" id="pose-label">수면 중 · 바로 누움 (Supine)</span>
+                <span class="text-[10px] mono px-1 rounded bg-primary/20 text-on-surface" id="pose-conf">98.4%</span>
+              </div>
+              <svg class="absolute inset-0 w-full h-full text-primary" preserveAspectRatio="none" viewBox="0 0 100 100" id="skeleton">
+                <g stroke="currentColor" stroke-opacity=".7" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke">
+                  <circle cx="50" cy="22" r="10" fill="rgba(125,211,252,0.15)" stroke-dasharray="2 2"/>
+                  <line x1="38" x2="62" y1="36" y2="36"/><line x1="50" x2="50" y1="22" y2="60"/>
+                  <line x1="38" x2="30" y1="36" y2="48"/><line x1="30" x2="36" y1="48" y2="54"/>
+                  <line x1="62" x2="70" y1="36" y2="48"/><line x1="70" x2="64" y1="48" y2="54"/>
+                  <line x1="50" x2="42" y1="60" y2="82"/><line x1="50" x2="58" y1="60" y2="82"/>
+                </g>
+                <g fill="currentColor">
+                  <circle cx="50" cy="22" r="2.5"/><circle cx="38" cy="36" r="2"/><circle cx="62" cy="36" r="2"/><circle cx="30" cy="48" r="2"/><circle cx="70" cy="48" r="2"/><circle cx="50" cy="60" r="2"/><circle cx="42" cy="82" r="2"/><circle cx="58" cy="82" r="2"/>
+                </g>
+              </svg>
+              <div class="mt-auto flex justify-between items-center gap-2 text-[10px] text-on-surface-variant mono bg-surface/70 px-2 py-0.5 rounded">
+                <span class="hidden sm:inline">ON-DEVICE YOLOV8-POSE</span><span class="text-primary" id="face-label">안면 노출 정상</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- privacy mask -->
+          <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-32 sm:w-44 h-20 sm:h-24 rounded-lg bg-surface-container-lowest/90 border border-outline-variant/30 backdrop-blur-2xl flex flex-col items-center justify-center p-2 text-center" id="privacy-mask-layer">
+            <span class="material-symbols-outlined text-primary text-xl mb-1">visibility_off</span>
+            <span class="text-[11px] font-medium text-on-surface">사생활 보호 구역 마스킹</span>
+            <span class="text-[9px] text-on-surface-variant hidden sm:block">부모 침대 방향 하드웨어 블러</span>
+          </div>
+
+          <!-- shutter overlay -->
+          <div class="absolute inset-0 z-30 bg-surface-container-lowest flex flex-col items-center justify-center gap-2 text-center p-6" id="shutter-layer" hidden>
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant">videocam_off</span>
+            <span class="text-sm font-semibold text-on-surface">프라이버시 셔터가 닫혀 있어요</span>
+            <span class="text-xs text-on-surface-variant">영상은 꺼졌지만 울음·온습도 감지는 계속 동작합니다.</span>
+            <a href="#privacy" class="mt-2 text-xs text-primary hover:underline">기기 및 사생활 보호 관리에서 열기</a>
+          </div>
+
+          <!-- prone alarm overlay -->
+          <div class="absolute inset-0 z-20 pointer-events-none alarm-flash" id="alarm-frame" hidden></div>
+
+          <div class="absolute bottom-3 left-4 sm:bottom-4 sm:left-6 text-[11px] sm:text-xs mono text-on-surface-variant/80 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[14px] text-primary">videocam</span><span id="live-clock">--</span>
+          </div>
+        </div>
+
+        <!-- controls -->
+        <div class="p-3 sm:p-4 bg-surface-container-high/90 border-t border-primary/10 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button class="px-3.5 py-2 rounded-xl bg-surface-container/70 hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface text-xs font-medium flex items-center gap-1.5 transition-all" id="snapshot-btn" type="button">
+              <span class="material-symbols-outlined text-[17px] text-primary">photo_camera</span><span>순간 캡처</span>
+            </button>
+            <button class="px-3.5 py-2 rounded-xl bg-surface-container/70 hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface text-xs font-medium flex items-center gap-1.5 transition-all" id="light-btn" type="button" title="눌러서 수유등 밝기 변경">
+              <span class="material-symbols-outlined text-[17px] text-secondary">nightlight</span><span id="light-label">수유 조도 (15%)</span>
+            </button>
+            <button class="px-3.5 py-2 rounded-xl bg-surface-container/70 hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface text-xs font-medium flex items-center gap-1.5 transition-all hover:border-error/40" id="buzzer-test-btn" type="button">
+              <span class="material-symbols-outlined text-[17px] text-error">campaign</span><span>기기 부저 테스트</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container/70 border border-outline-variant/30 text-xs text-on-surface-variant hover:text-on-surface" id="ir-btn" type="button">
+              <span class="material-symbols-outlined text-[16px] text-primary">night_sight_auto</span><span>스마트 IR 자동 전환: <strong class="text-on-surface font-semibold" id="ir-state">ON</strong></span>
+            </button>
+            <button class="p-2 rounded-xl bg-surface-container/70 hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface-variant hover:text-on-surface transition-all flex items-center justify-center" id="fullscreen-btn" title="전체화면 모드" type="button">
+              <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- snapshots strip -->
+      <div class="rounded-xl bg-surface-container/60 border border-primary/10 p-4 space-y-3" id="snap-wrap" hidden>
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[18px]">photo_library</span>오늘 캡처한 순간 (기기 로컬 저장)</span>
+          <span class="text-[11px] text-on-surface-variant">24시간 후 자동 파기</span>
+        </div>
+        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-1" id="snap-strip"></div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container/60 border border-primary/10 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-secondary-container/60 text-secondary-fixed flex items-center justify-center shrink-0 border border-secondary/20"><span class="material-symbols-outlined text-xl">crib</span></div>
+          <div>
+            <div class="text-sm font-semibold text-on-surface">영유아 안전 수면 안심 체크리스트</div>
+            <div class="text-xs text-on-surface-variant">눌러서 오늘 밤 수면 환경을 직접 점검해 보세요.</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-xs" id="checklist">
+          <button type="button" class="check-chip px-2.5 py-1 rounded-lg bg-surface-container-high/80 text-on-surface border border-outline-variant/20 flex items-center gap-1" aria-pressed="true"><span class="material-symbols-outlined text-primary text-[14px]">check_circle</span>단단한 매트리스 사용</button>
+          <button type="button" class="check-chip px-2.5 py-1 rounded-lg bg-surface-container-high/80 text-on-surface border border-outline-variant/20 flex items-center gap-1" aria-pressed="true"><span class="material-symbols-outlined text-primary text-[14px]">check_circle</span>두꺼운 이불·베개 제거</button>
+          <button type="button" class="check-chip px-2.5 py-1 rounded-lg bg-surface-container-high/80 text-on-surface border border-outline-variant/20 flex items-center gap-1" aria-pressed="true"><span class="material-symbols-outlined text-primary text-[14px]">check_circle</span>등 대고 눕히기(천장 바라봄)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="xl:col-span-4 flex flex-col space-y-4 min-w-0">
+      <div class="rounded-2xl bg-surface-container/70 border border-primary/15 p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-outline-variant/20">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl">smart_toy</span><h2 class="text-sm font-bold text-on-surface tracking-wide">실시간 케어 인텔리전스</h2></div>
+          <span class="text-[11px] mono text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">실시간 연산 중</span>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <div class="p-3.5 rounded-xl bg-surface-container-high/70 border border-outline-variant/30 flex items-center justify-between gap-3 transition-colors" id="metric-posture">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary" id="posture-icon-wrap"><span class="material-symbols-outlined text-2xl">airline_seat_flat</span></div>
+              <div>
+                <div class="text-[11px] font-medium text-on-surface-variant">자세 분석</div>
+                <div class="text-sm font-bold text-on-surface flex items-center gap-1.5"><span id="posture-text">바르게 누움 (정상)</span><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" id="posture-dot"></span></div>
+              </div>
+            </div>
+            <div class="text-right"><span class="text-xs mono font-semibold text-primary" id="posture-code">Supine</span><div class="text-[10px] text-on-surface-variant" id="posture-sub">얼굴 개방 상태</div></div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-high/70 border border-outline-variant/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary"><span class="material-symbols-outlined text-2xl">sentiment_satisfied</span></div>
+              <div>
+                <div class="text-[11px] font-medium text-on-surface-variant">울음 및 소리 감지</div>
+                <div class="text-sm font-bold text-on-surface flex items-center gap-1.5"><span>안정 및 조용함</span><span class="text-xs font-normal text-secondary mono" id="db-metric">(32 dB)</span></div>
+              </div>
+            </div>
+            <div class="text-right"><span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary-container/60 text-on-secondary-container border border-secondary/20 whitespace-nowrap">정상 안전</span><div class="text-[10px] text-on-surface-variant mt-0.5">울음 신호 없음</div></div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-high/70 border border-outline-variant/30 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-2xl">thermostat</span></div>
+              <div>
+                <div class="text-[11px] font-medium text-on-surface-variant">침대 주변 온습도</div>
+                <div class="text-sm font-bold text-on-surface flex items-center gap-2 mono"><span id="temp-val">22.8°C</span><span class="text-outline">/</span><span id="hum-val">54% 습도</span></div>
+              </div>
+            </div>
+            <div class="text-right"><span class="text-xs font-semibold text-tertiary">쾌적 범위</span><div class="text-[10px] text-on-surface-variant">수면 최적 환경</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-gradient-to-br from-surface-container/90 via-surface-container-high/80 to-surface-container/90 border border-error/30 p-5 shadow-lg relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-error/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-error text-xl">warning</span><h3 class="text-sm font-bold text-on-surface">엎드림 의심(Prone) 즉시 경보 체계</h3></div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-error/20 text-error border border-error/30 whitespace-nowrap">안전 골든타임</span>
+        </div>
+        <p class="text-xs text-on-surface-variant leading-relaxed mb-4">아기가 엎드려 자는 자세(코·입 질식 위험각)로 전환될 경우, <strong class="text-on-surface font-semibold">온디바이스 엣지 AI가 <span class="prone-delay">5</span>초 이내 카메라 기기 본체에서 직접 강력 부저음</strong>을 출력하고 등록된 모든 보호자 폰으로 긴급 푸시를 동시 발송합니다.</p>
+        <div class="p-3 rounded-xl bg-background/50 border border-outline-variant/30 flex items-center justify-between gap-3">
+          <div class="flex flex-col"><span class="text-xs font-medium text-on-surface">경보 작동 테스트 시뮬레이션</span><span class="text-[10px] text-on-surface-variant">부저 볼륨 및 스마트폰 수신 여부 점검</span></div>
+          <button class="px-3 py-1.5 rounded-lg bg-error/15 hover:bg-error text-error hover:text-on-error border border-error/30 text-xs font-semibold transition-all duration-200 shrink-0" id="trigger-simulation" type="button">시뮬레이션 가동</button>
+        </div>
+        <div class="mt-3 p-2.5 rounded-lg bg-error text-on-error text-xs font-medium flex items-center justify-between gap-2" id="sim-alert-banner" hidden>
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">notifications_active</span><span id="sim-text">[가상 테스트] 기기 경보음 출력 중 (3단계 볼륨)</span></span>
+          <button class="px-2 py-0.5 rounded bg-on-error text-error text-[10px] font-bold shrink-0" id="stop-sim-btn" type="button">중지</button>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-surface-container/70 border border-primary/15 p-5 flex flex-col space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+          <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg">history</span><h3 class="text-sm font-bold text-on-surface">실시간 감지 이벤트 피드</h3></div>
+          <a class="text-xs text-primary hover:underline flex items-center gap-0.5" href="#timeline"><span>전체 타임라인</span><span class="material-symbols-outlined text-[13px]">chevron_right</span></a>
+        </div>
+        <div class="space-y-3 pt-1" id="live-feed"></div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container/60 border border-outline-variant/30 p-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-surface-container-high text-primary border border-primary/20"><span class="material-symbols-outlined text-lg">shield_person</span></div>
+          <div><div class="text-xs font-semibold text-on-surface">사생활 보호 구역 마스킹</div><div class="text-[11px] text-on-surface-variant">침대 외 영역 영상 하드웨어 비식별화</div></div>
+        </div>
+        <button type="button" role="switch" aria-checked="true" class="toggle mask-toggle" id="masking-toggle" aria-label="사생활 보호 구역 마스킹"></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE: TIMELINE ============ -->
+<section data-view="timeline" class="w-full px-4 sm:px-6 lg:px-10 py-6 max-w-[1600px] mx-auto space-y-8" hidden>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="space-y-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>온디바이스 Edge AI 분석 완료</span>
+        <span class="text-xs text-on-surface-variant font-medium" id="base-date">기준일: -</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface" style="text-wrap:balance">수면 패턴 및 이벤트 타임라인</h1>
+      <p class="text-sm text-on-surface-variant">카메라 내 로컬 신경망 NPU가 프라이버시 침해 없이 아기의 뒤척임과 호흡 주기, 울음을 안전하게 분석했습니다.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center p-1 rounded-xl bg-surface-container" id="range-tabs">
+        <button class="range-btn px-3.5 py-1.5 rounded-lg text-xs transition-colors" data-range="day" type="button">오늘 (24h)</button>
+        <button class="range-btn px-3.5 py-1.5 rounded-lg text-xs transition-colors" data-range="week" type="button">주간 평균</button>
+        <button class="range-btn px-3.5 py-1.5 rounded-lg text-xs transition-colors" data-range="month" type="button">월간 추세</button>
+      </div>
+      <button class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary-container text-on-primary-container hover:bg-primary/20 text-xs font-medium transition-all" id="export-btn" type="button">
+        <span class="material-symbols-outlined text-[16px]">content_copy</span>수면 리포트 복사
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="relative overflow-hidden rounded-xl bg-surface-container/70 p-5 shadow-lg flex flex-col justify-between">
+      <div class="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-primary/5 blur-2xl pointer-events-none"></div>
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-medium text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">bedtime</span>총 수면 시간</span>
+        <span class="text-[11px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10" id="kpi-goal">목표 92%</span>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2 flex-wrap">
+        <span class="text-3xl font-bold tracking-tight text-on-surface" id="kpi-sleep">11<span class="text-lg font-normal text-on-surface-variant">h</span> 30<span class="text-lg font-normal text-on-surface-variant">m</span></span>
+        <span class="text-xs text-on-surface-variant">권장: 12h 30m</span>
+      </div>
+      <div class="mt-4 space-y-1.5">
+        <div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden"><div class="bg-primary h-full rounded-full transition-all duration-700" id="kpi-bar" style="width:92%"></div></div>
+        <div class="flex justify-between text-[11px] text-on-surface-variant"><span id="kpi-deep">깊은 수면 6.5h</span><span id="kpi-light">얕은 수면 5.0h</span></div>
+      </div>
+    </div>
+    <div class="relative overflow-hidden rounded-xl bg-surface-container/70 p-5 shadow-lg flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-medium text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-secondary text-[18px]">accessibility_new</span>엎드림 의심 감지</span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-primary px-2 py-0.5 rounded-full bg-primary/10"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 안전</span>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2"><span class="text-3xl font-bold tracking-tight text-on-surface" id="kpi-prone">0<span class="text-lg font-normal text-on-surface-variant">회</span></span><span class="text-xs text-on-surface-variant">특이사항 미발생</span></div>
+      <div class="mt-4 pt-3 flex items-center gap-2 text-[11px] text-on-surface-variant"><span class="material-symbols-outlined text-secondary text-sm">verified</span><span>코·입 가림 추론 모델 0.2초 주기 정상 점검</span></div>
+    </div>
+    <div class="relative overflow-hidden rounded-xl bg-surface-container/70 p-5 shadow-lg flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-medium text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-tertiary text-[18px]">record_voice_over</span>울음 감지 횟수</span>
+        <span class="text-[11px] text-tertiary font-medium px-2 py-0.5 rounded-full bg-tertiary/10 whitespace-nowrap" id="kpi-cry-calm">평균 45초 이내 진정</span>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2"><span class="text-3xl font-bold tracking-tight text-on-surface" id="kpi-cry">2<span class="text-lg font-normal text-on-surface-variant">회</span></span><span class="text-xs text-on-surface-variant" id="kpi-cry-peak">최고 소음 78dB</span></div>
+      <div class="mt-4 pt-3 flex items-center justify-between text-[11px] text-on-surface-variant gap-2"><span class="flex items-center gap-1 text-tertiary"><span class="material-symbols-outlined text-sm">check_circle</span> <span id="kpi-cry-check">2건 모두 부모 확인</span></span><span id="kpi-cry-night">야간 기상 1회 포함</span></div>
+    </div>
+    <div class="relative overflow-hidden rounded-xl bg-surface-container/70 p-5 shadow-lg flex flex-col justify-between">
+      <div class="absolute -right-4 -bottom-4 w-28 h-28 rounded-full bg-secondary/5 blur-3xl pointer-events-none"></div>
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs font-medium text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">shield</span>온디바이스 분석 보호</span>
+        <span class="text-[11px] text-on-primary-container font-semibold px-2 py-0.5 rounded-full bg-primary-container">E2E Local</span>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2"><span class="text-3xl font-bold tracking-tight text-primary">0<span class="text-lg font-normal text-on-surface"> MB</span></span><span class="text-xs text-on-surface-variant">외부 영상 업로드</span></div>
+      <div class="mt-4 pt-3 flex items-center justify-between text-[11px] text-on-surface-variant gap-2"><span class="text-on-surface">카메라 NPU 내부 추론</span><span class="text-primary mono text-[10px]">100% 프라이버시 유지</span></div>
+    </div>
+  </div>
+
+  <div class="rounded-xl bg-surface-container/60 p-5 sm:p-7 shadow-xl space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl">auto_graph</span><h2 class="text-lg font-bold text-on-surface">24시간 연속 수면 구간 &amp; 뒤척임 강도</h2></div>
+        <p class="text-xs text-on-surface-variant">AI 비전 가속도 벡터와 오디오 스펙트럼 분석을 결합한 수면 심도 맵입니다. 구간을 눌러 상세를 확인하세요.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 text-xs">
+        <div class="flex items-center gap-1.5 text-on-surface-variant"><span class="w-3 h-3 rounded-sm bg-primary"></span><span>깊은 수면</span></div>
+        <div class="flex items-center gap-1.5 text-on-surface-variant"><span class="w-3 h-3 rounded-sm bg-secondary opacity-75"></span><span>얕은 수면</span></div>
+        <div class="flex items-center gap-1.5 text-on-surface-variant"><span class="w-3 h-3 rounded-sm bg-tertiary"></span><span>뒤척임</span></div>
+        <div class="flex items-center gap-1.5 text-on-surface-variant"><span class="w-3 h-3 rounded-sm bg-error"></span><span>울음/소리</span></div>
+      </div>
+    </div>
+    <div class="overflow-x-auto no-scrollbar">
+      <div class="min-w-[640px] space-y-2">
+        <div class="relative h-4 text-[11px] text-on-surface-variant mono" id="seg-axis"></div>
+        <div class="w-full h-11 bg-surface-container-lowest rounded-xl p-1 flex gap-0.5 overflow-hidden shadow-inner" id="seg-strip"></div>
+        <div class="text-xs text-on-surface-variant flex items-center gap-2 pt-1 min-h-[1.5rem]" id="seg-detail"><span class="material-symbols-outlined text-[16px] text-primary">touch_app</span>구간을 선택하면 여기에 상세가 표시됩니다.</div>
+      </div>
+    </div>
+    <div class="space-y-2 pt-2">
+      <div class="flex items-center justify-between text-xs text-on-surface-variant">
+        <span class="font-medium flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> 뒤척임 가속도 강도 (Edge Motion Vector)</span>
+        <span class="mono text-[11px]">임계치 65% 이상 주의</span>
+      </div>
+      <div class="relative w-full h-28 bg-surface-container-lowest/60 rounded-xl p-2 overflow-hidden">
+        <svg class="w-full h-full text-primary" fill="none" preserveAspectRatio="none" viewBox="0 0 1000 120" id="motion-svg">
+          <defs><linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.35"/><stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/></linearGradient></defs>
+          <line x1="0" x2="1000" y1="42" y2="42" stroke="#ff6b6b" stroke-opacity=".45" stroke-dasharray="6 6" vector-effect="non-scaling-stroke"/>
+          <line x1="0" x2="1000" y1="81" y2="81" stroke="#2a3a48" stroke-dasharray="4 6" vector-effect="non-scaling-stroke"/>
+          <path d="M 0,110 Q 50,105 100,90 T 200,105 T 300,100 T 350,60 T 370,100 T 450,110 T 520,35 T 550,100 T 650,105 T 720,20 T 740,95 T 850,110 T 920,40 T 950,100 T 1000,110 L 1000,120 L 0,120 Z" fill="url(#chartGradient)"/>
+          <path d="M 0,110 Q 50,105 100,90 T 200,105 T 300,100 T 350,60 T 370,100 T 450,110 T 520,35 T 550,100 T 650,105 T 720,20 T 740,95 T 850,110 T 920,40 T 950,100 T 1000,110" stroke="#7dd3fc" stroke-linecap="round" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface -translate-x-1/2 -translate-y-1/2" style="left:52%;top:calc(8px + (100% - 16px)*35/120)"></span>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-tertiary ring-2 ring-surface -translate-x-1/2 -translate-y-1/2" style="left:72%;top:calc(8px + (100% - 16px)*20/120)"></span>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface -translate-x-1/2 -translate-y-1/2" style="left:92%;top:calc(8px + (100% - 16px)*40/120)"></span>
+      </div>
+      <div class="grid grid-cols-2 sm:flex sm:justify-between gap-1 text-[10px] text-on-surface-variant mono px-1">
+        <span>취침 20:00</span><span class="text-error">03:35 울음 피크 (52%)</span><span class="text-tertiary">07:05 기상 피크 (68%)</span><span class="text-error">14:15 낮잠 뒤척임 (48%)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 rounded-xl bg-surface-container/60 p-5 sm:p-6 shadow-xl flex flex-col space-y-6 min-w-0">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">format_list_bulleted</span>엣지 감지 상세 로그</h2>
+          <span class="text-xs text-on-surface-variant">단말 내 저장소에 암호화 저장된 이벤트 기록</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-surface-container-high/60" id="filter-tabs">
+          <button class="filter-btn px-3 py-1 rounded-lg text-xs transition-all" data-filter="all" type="button">전체</button>
+          <button class="filter-btn px-3 py-1 rounded-lg text-xs transition-all" data-filter="cry" type="button">울음 감지</button>
+          <button class="filter-btn px-3 py-1 rounded-lg text-xs transition-all" data-filter="posture" type="button">자세/뒤척임</button>
+          <button class="filter-btn px-3 py-1 rounded-lg text-xs transition-all" data-filter="device" type="button">기기 상태</button>
+        </div>
+      </div>
+      <div class="space-y-4" id="log-list"></div>
+    </div>
+
+    <div class="flex flex-col space-y-5">
+      <div class="rounded-xl bg-surface-container/60 p-6 shadow-xl space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error flex-shrink-0"><span class="material-symbols-outlined text-[24px]">health_and_safety</span></div>
+          <div><h3 class="text-sm font-bold text-on-surface">의료기기 아님 안내</h3><span class="text-[11px] text-on-surface-variant">안전 모니터링 보조 도구</span></div>
+        </div>
+        <p class="text-xs leading-relaxed text-on-surface-variant">본 제품(MomCam)은 질병의 진단, 치료, 완화, 처치 또는 예방을 목적으로 하는 의료기기가 아니며 영아돌연사증후군(SIDS)을 방지하지 못합니다. 인공지능 영상 및 소리 분석은 부모의 육안 관찰을 보조하는 수단이므로 항상 보호자의 직접 확인이 우선되어야 합니다.</p>
+        <div class="space-y-2.5 pt-2">
+          <div class="flex items-start gap-2.5 text-xs text-on-surface"><span class="material-symbols-outlined text-primary text-base flex-shrink-0">verified_user</span><span><strong>보호자 직접 확인 원칙:</strong> 알림 수신 시 즉시 아이의 호흡과 자세를 직접 눈으로 확인하세요.</span></div>
+          <div class="flex items-start gap-2.5 text-xs text-on-surface"><span class="material-symbols-outlined text-primary text-base flex-shrink-0">router</span><span><strong>독립 안전망:</strong> 와이파이가 끊겨도 기기 본체 부저가 울리도록 안전 페일세이프가 내장되어 있습니다.</span></div>
+          <div class="flex items-start gap-2.5 text-xs text-on-surface"><span class="material-symbols-outlined text-primary text-base flex-shrink-0">security</span><span><strong>100% 로컬 암호화:</strong> 분석된 썸네일과 스냅샷은 외부 서버로 유출되지 않고 <span class="retention-text">24시간</span> 후 자동 파기됩니다.</span></div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container/60 p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[18px]">psychology</span>수면 품질 점수</h3>
+          <span class="text-xs mono font-bold text-primary" id="score-label">88 / 100</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative w-16 h-16 flex-shrink-0">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#202c42" stroke-width="3.5"/>
+              <path id="score-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#7dd3fc" stroke-dasharray="88, 100" stroke-linecap="round" stroke-width="3.5" style="transition:stroke-dasharray .6s"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center font-bold text-xs text-on-surface" id="score-num">88점</div>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-on-surface" id="score-title">양호한 수면 주기</p>
+            <p class="text-[11px] text-on-surface-variant" id="score-desc">야간 각성 1회로 안정적인 깊은 수면 구간이 전체의 56%를 차지했습니다.</p>
+          </div>
+        </div>
+        <div class="pt-2 flex justify-between items-center text-xs gap-2"><span class="text-on-surface-variant">자세 안정성 지표</span><span class="font-semibold text-primary">99.4% (바른 누움 유지)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE: SETTINGS ============ -->
+<section data-view="settings" class="w-full px-4 sm:px-6 lg:px-10 py-6 max-w-[1200px] mx-auto space-y-6" hidden>
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div class="space-y-1">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">감지 및 안전 알림 설정</h1>
+      <p class="text-sm text-on-surface-variant">카메라 본체의 엣지 AI가 언제, 얼마나 크게 알릴지 정합니다. 변경 사항은 기기에 바로 적용됩니다.</p>
+    </div>
+    <span class="text-xs text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-primary">sync</span><span id="sync-label">기기와 동기화됨</span></span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <!-- Prone -->
+    <div class="rounded-2xl bg-surface-container/70 border border-error/25 p-5 space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-error/15 text-error flex items-center justify-center"><span class="material-symbols-outlined">airline_seat_flat_angled</span></div>
+          <div><div class="text-sm font-bold text-on-surface">엎드림 의심 즉시 경보</div><div class="text-[11px] text-on-surface-variant">안전 필수 기능 · 방해 금지 시간에도 항상 울립니다</div></div>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-error/20 text-error border border-error/30 whitespace-nowrap">항상 켜짐</span>
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><label for="prone-delay" class="text-on-surface-variant">경보까지 확인 시간</label><span class="mono text-on-surface"><span class="prone-delay">5</span>초</span></div>
+        <input type="range" id="prone-delay" min="2" max="10" value="5" class="w-full">
+        <p class="text-[11px] text-on-surface-variant">짧을수록 빠르지만 정상 뒤척임에도 울릴 수 있어요. 권장 3~5초.</p>
+      </div>
+      <div class="space-y-2">
+        <div class="text-xs text-on-surface-variant">기기 부저 볼륨</div>
+        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-surface-container-high/60" id="buzzer-level">
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="1">1단계</button>
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="2">2단계</button>
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="3">3단계 (최대)</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-3 pt-1">
+        <div><div class="text-xs font-medium text-on-surface">얼굴 가림 감지</div><div class="text-[11px] text-on-surface-variant">이불·인형이 코와 입을 덮으면 함께 경보</div></div>
+        <button type="button" role="switch" aria-checked="true" class="toggle" id="t-face" aria-label="얼굴 가림 감지"></button>
+      </div>
+    </div>
+
+    <!-- Cry -->
+    <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-tertiary/15 text-tertiary flex items-center justify-center"><span class="material-symbols-outlined">graphic_eq</span></div>
+          <div><div class="text-sm font-bold text-on-surface">울음 및 소리 감지</div><div class="text-[11px] text-on-surface-variant">Edge Audio NPU가 울음 유형을 로컬에서 분류</div></div>
+        </div>
+        <button type="button" role="switch" aria-checked="true" class="toggle" id="t-cry" aria-label="울음 감지"></button>
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><label for="cry-db" class="text-on-surface-variant">알림 기준 소리 크기</label><span class="mono text-on-surface" id="cry-db-val">65 dB</span></div>
+        <input type="range" id="cry-db" min="45" max="85" value="65" class="w-full">
+        <div class="flex justify-between text-[10px] text-on-surface-variant mono"><span>45 속삭임</span><span>65 보통 울음</span><span>85 크게 울음</span></div>
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs"><label for="cry-sec" class="text-on-surface-variant">울음 지속 시간</label><span class="mono text-on-surface" id="cry-sec-val">10초 이상</span></div>
+        <input type="range" id="cry-sec" min="3" max="60" value="10" class="w-full">
+        <p class="text-[11px] text-on-surface-variant">짧은 칭얼거림은 알리지 않고 기록만 남겨요.</p>
+      </div>
+    </div>
+
+    <!-- Environment -->
+    <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center"><span class="material-symbols-outlined">device_thermostat</span></div>
+          <div><div class="text-sm font-bold text-on-surface">온습도 쾌적 범위</div><div class="text-[11px] text-on-surface-variant">범위를 벗어나면 보호자에게 알림</div></div>
+        </div>
+        <button type="button" role="switch" aria-checked="true" class="toggle" id="t-env" aria-label="온습도 알림"></button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-3 rounded-xl bg-surface-container-high/60 space-y-1">
+          <label for="temp-min" class="text-[11px] text-on-surface-variant">온도 (°C)</label>
+          <div class="flex items-center gap-1.5 mono text-sm"><input id="temp-min" type="number" value="20" min="16" max="26" class="w-14 bg-surface-container-lowest rounded-md px-2 py-1 text-on-surface border border-outline-variant/40"><span class="text-outline">~</span><input id="temp-max" type="number" value="24" min="16" max="30" class="w-14 bg-surface-container-lowest rounded-md px-2 py-1 text-on-surface border border-outline-variant/40" aria-label="최고 온도"></div>
+        </div>
+        <div class="p-3 rounded-xl bg-surface-container-high/60 space-y-1">
+          <label for="hum-min" class="text-[11px] text-on-surface-variant">습도 (%)</label>
+          <div class="flex items-center gap-1.5 mono text-sm"><input id="hum-min" type="number" value="40" min="20" max="70" class="w-14 bg-surface-container-lowest rounded-md px-2 py-1 text-on-surface border border-outline-variant/40"><span class="text-outline">~</span><input id="hum-max" type="number" value="60" min="30" max="80" class="w-14 bg-surface-container-lowest rounded-md px-2 py-1 text-on-surface border border-outline-variant/40" aria-label="최고 습도"></div>
+        </div>
+      </div>
+      <p class="text-[11px] text-on-surface-variant">현재 아가방 <span class="mono text-on-surface" id="env-now">22.8°C / 54%</span> · 설정 범위 안에 있어요.</p>
+    </div>
+
+    <!-- Recipients -->
+    <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center"><span class="material-symbols-outlined">smartphone</span></div>
+        <div><div class="text-sm font-bold text-on-surface">알림 받는 보호자</div><div class="text-[11px] text-on-surface-variant">긴급 경보는 모든 보호자 폰으로 동시에 발송</div></div>
+      </div>
+      <div class="space-y-2" id="recipients"></div>
+      <form class="flex gap-2" id="add-recipient">
+        <input id="recipient-name" type="text" placeholder="예: 할머니 폰" class="flex-1 min-w-0 bg-surface-container-lowest rounded-lg px-3 py-2 text-xs text-on-surface border border-outline-variant/40 placeholder:text-outline" aria-label="보호자 이름">
+        <button type="submit" class="px-3 py-2 rounded-lg bg-primary/15 text-primary text-xs font-semibold hover:bg-primary/25 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">add</span>추가</button>
+      </form>
+      <div class="flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/20">
+        <div><div class="text-xs font-medium text-on-surface">방해 금지 시간 (22:00~06:00)</div><div class="text-[11px] text-on-surface-variant">일반 알림만 무음 · 엎드림 경보는 예외</div></div>
+        <button type="button" role="switch" aria-checked="false" class="toggle" id="t-dnd" aria-label="방해 금지 시간"></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE: PRIVACY ============ -->
+<section data-view="privacy" class="w-full px-4 sm:px-6 lg:px-10 py-6 max-w-[1200px] mx-auto space-y-6" hidden>
+  <div class="space-y-1">
+    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">기기 및 사생활 보호 관리</h1>
+    <p class="text-sm text-on-surface-variant">영상은 카메라 밖으로 나가지 않습니다. 저장 기간과 가림 구역, 접근 권한을 직접 관리하세요.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="rounded-2xl bg-surface-container/70 border border-primary/15 p-5 space-y-4">
+      <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">memory</span><h2 class="text-sm font-bold text-on-surface">기기 정보</h2></div>
+      <dl class="text-xs space-y-2.5">
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">모델</dt><dd class="text-on-surface mono">MomCam EG-1</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">설치 위치</dt><dd class="text-on-surface">아가방 침대 정면</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">펌웨어</dt><dd class="text-on-surface mono">v2.4.1 <span class="text-primary">(최신)</span></dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">AI 모델</dt><dd class="text-on-surface mono">pose-v8n · cry-v3</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">NPU 사용률</dt><dd class="text-on-surface mono" id="npu-use">31%</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">Wi-Fi 신호</dt><dd class="text-on-surface mono">-54 dBm · 양호</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant">비상 배터리</dt><dd class="text-on-surface mono">100% · 정전 시 6시간</dd></div>
+      </dl>
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
+        <div><div class="text-xs font-medium text-on-surface">프라이버시 셔터</div><div class="text-[11px] text-on-surface-variant">영상만 끄고 소리·온습도 감지는 유지</div></div>
+        <button type="button" role="switch" aria-checked="false" class="toggle" id="t-shutter" aria-label="프라이버시 셔터"></button>
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-4">
+      <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">sd_storage</span><h2 class="text-sm font-bold text-on-surface">로컬 저장소</h2></div>
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs"><span class="text-on-surface-variant">사용 중</span><span class="mono text-on-surface" id="storage-label">3.2 GB / 32 GB</span></div>
+        <div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full bg-primary rounded-full transition-all" id="storage-bar" style="width:10%"></div></div>
+        <div class="text-[11px] text-on-surface-variant">이벤트 썸네일 <span id="thumb-count">4</span>장 · 스냅샷 <span id="snap-count">0</span>장 · 로그 2.1 MB</div>
+      </div>
+      <div class="space-y-2">
+        <div class="text-xs text-on-surface-variant">자동 파기 주기</div>
+        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-surface-container-high/60" id="retention">
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="24시간">24시간</button>
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="72시간">72시간</button>
+          <button type="button" class="seg-btn py-1.5 rounded-lg text-xs" data-v="7일">7일</button>
+        </div>
+      </div>
+      <div class="pt-2 border-t border-outline-variant/20" id="wipe-area">
+        <button type="button" class="w-full px-3 py-2 rounded-lg bg-error/10 text-error border border-error/30 text-xs font-semibold hover:bg-error/20 flex items-center justify-center gap-1.5" id="wipe-btn"><span class="material-symbols-outlined text-[16px]">delete_forever</span>저장된 영상 기록 모두 삭제</button>
+        <div class="space-y-2" id="wipe-confirm" hidden>
+          <p class="text-[11px] text-on-surface">썸네일과 스냅샷이 기기에서 영구 삭제됩니다. 되돌릴 수 없어요.</p>
+          <div class="flex gap-2">
+            <button type="button" class="flex-1 px-3 py-2 rounded-lg bg-error text-on-error text-xs font-bold" id="wipe-yes">삭제</button>
+            <button type="button" class="flex-1 px-3 py-2 rounded-lg bg-surface-container-high text-on-surface text-xs" id="wipe-no">취소</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-4">
+      <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">blur_on</span><h2 class="text-sm font-bold text-on-surface">가림(마스킹) 구역</h2></div>
+      <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-surface-container-lowest" id="mask-preview">
+        <div class="absolute inset-0" id="mask-scene"></div>
+        <div class="absolute right-[3%] bottom-[5%] w-[28%] h-[30%] rounded-md bg-surface-container-lowest/90 border border-primary/40 flex items-center justify-center text-[10px] text-primary" data-zone="bed">부모 침대</div>
+        <div class="absolute left-[3%] top-[6%] w-[16%] h-[40%] rounded-md bg-surface-container-lowest/90 border border-primary/40 flex items-center justify-center text-[10px] text-primary text-center" data-zone="door" hidden>출입문</div>
+      </div>
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between gap-3"><span class="text-xs text-on-surface">부모 침대 방향</span><button type="button" role="switch" aria-checked="true" class="toggle mask-toggle" id="t-zone-bed" aria-label="부모 침대 방향 가림"></button></div>
+        <div class="flex items-center justify-between gap-3"><span class="text-xs text-on-surface">출입문 쪽</span><button type="button" role="switch" aria-checked="false" class="toggle" id="t-zone-door" aria-label="출입문 쪽 가림"></button></div>
+      </div>
+      <p class="text-[11px] text-on-surface-variant">가림 처리는 카메라 센서 단계에서 적용되어 저장·전송되는 어떤 영상에도 남지 않습니다.</p>
+    </div>
+  </div>
+
+  <div class="rounded-2xl bg-surface-container/70 border border-outline-variant/30 p-5 space-y-4">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">manage_accounts</span><h2 class="text-sm font-bold text-on-surface">영상 접근 기록</h2></div>
+      <span class="text-[11px] text-on-surface-variant">최근 7일 · 기기 내부 기록</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs min-w-[520px]">
+        <thead><tr class="text-on-surface-variant text-left border-b border-outline-variant/30"><th class="py-2 font-medium">시각</th><th class="py-2 font-medium">보호자</th><th class="py-2 font-medium">기기</th><th class="py-2 font-medium">접근 방식</th></tr></thead>
+        <tbody class="text-on-surface mono" id="access-log"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="w-full bg-surface-container-lowest/80 border-t border-outline-variant/20 py-6 mt-auto">
+  <div class="w-full px-4 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+    <div class="flex items-center gap-2"><span class="font-semibold text-on-surface">MomCam On-Device Guard</span><span>© 2026</span></div>
+    <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-1"><span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-primary">lock</span> E2E 종단간 로컬 암호화 적용</span><span>클라우드 미전송 사생활 보장</span></div>
+  </div>
+</footer>
+
+<!-- Guide modal -->
+<div class="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" id="guide-modal" hidden>
+  <div class="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl bg-surface-container border border-primary/20 p-6 space-y-4 shadow-2xl">
+    <div class="flex items-center justify-between">
+      <h2 class="text-base font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">menu_book</span>영유아 안전 수면 가이드</h2>
+      <button type="button" class="p-1 rounded-lg hover:bg-surface-container-high text-on-surface-variant" id="guide-close" aria-label="닫기"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <ol class="space-y-3 text-sm text-on-surface list-decimal pl-5">
+      <li>아기는 낮잠과 밤잠 모두 <strong>등을 대고 천장을 보게</strong> 눕힙니다.</li>
+      <li>단단하고 평평한 매트리스에 꼭 맞는 시트만 사용합니다.</li>
+      <li>베개, 범퍼, 두꺼운 이불, 인형을 침대에서 치웁니다.</li>
+      <li>보호자 방에서 함께 지내되 같은 침대에서 재우지 않습니다.</li>
+      <li>방 온도를 20~24°C로 유지하고 옷을 과하게 입히지 않습니다.</li>
+      <li>아기 주변에서 흡연하지 않습니다.</li>
+    </ol>
+    <p class="text-xs text-on-surface-variant leading-relaxed">맘캠의 알림은 보조 수단입니다. 알림이 없더라도 정기적으로 아기를 직접 확인하고, 이상이 의심되면 즉시 의료진의 도움을 받으세요.</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="fixed left-1/2 -translate-x-1/2 bottom-6 z-[70] px-4 py-2.5 rounded-xl bg-surface-container-highest border border-primary/30 text-sm text-on-surface shadow-2xl flex items-center gap-2 max-w-[calc(100vw-32px)]" id="toast" hidden style="margin-bottom:env(safe-area-inset-bottom,0px)">
+  <span class="material-symbols-outlined text-primary text-[18px]" id="toast-icon">check_circle</span><span id="toast-text"></span>
+</div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem('momcam:'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('momcam:'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- IR scene (SVG) ---------- */
+let sid=0;
+function scene(opt={}){
+  const id='s'+(sid++); const day=opt.mode==='day'; const prone=opt.pose==='prone';
+  const vb=opt.crop||'0 0 1600 1000';
+  const c=day?{bg1:'#5a6b78',bg2:'#8496a3',mat:'#a9b8c2',sheet:'#b9c6cf',rail:'#c7a985',rail2:'#a88b6a',swad:'#d9c7b8',swad2:'#c4ae9c',skin1:'#f3d9c8',skin2:'#d9b29a',line:'#8a6f60'}
+                :{bg1:'#07131c',bg2:'#132b3a',mat:'#1d3646',sheet:'#23404f',rail:'#3b5f74',rail2:'#2b4b5e',swad:'#5e8399',swad2:'#4b6e83',skin1:'#d5e6ef',skin2:'#8fb0c1',line:'#4e6b7b'};
+  let rails='';
+  for(let x=380;x<=1220;x+=56){rails+=`<rect x="${x}" y="96" width="16" height="78" rx="6" fill="${c.rail}"/><rect x="${x}" y="842" width="16" height="78" rx="6" fill="${c.rail}"/>`}
+  const baby = prone
+   ? `<g transform="rotate(14 816 540)">
+        <ellipse cx="816" cy="580" rx="150" ry="190" fill="url(#${id}sw)"/>
+        <path d="M690 560 Q816 520 942 560" stroke="${c.swad2}" stroke-width="10" fill="none"/>
+        <ellipse cx="816" cy="372" rx="70" ry="66" fill="${c.skin2}"/>
+        <path d="M752 352 Q816 300 880 352" stroke="${c.line}" stroke-width="6" fill="none" opacity=".7"/>
+        <path d="M760 380 Q816 410 872 380" stroke="${c.line}" stroke-width="5" fill="none" opacity=".5"/>
+      </g>`
+   : `<ellipse cx="816" cy="590" rx="150" ry="195" fill="url(#${id}sw)"/>
+      <path d="M680 520 Q816 610 952 500" stroke="${c.swad2}" stroke-width="12" fill="none" opacity=".8"/>
+      <path d="M690 640 Q816 700 940 630" stroke="${c.swad2}" stroke-width="10" fill="none" opacity=".6"/>
+      <ellipse cx="772" cy="470" rx="26" ry="22" fill="${c.skin2}"/><ellipse cx="860" cy="470" rx="26" ry="22" fill="${c.skin2}"/>
+      <path d="M720 420 Q816 380 912 420 L 900 455 Q816 425 732 455Z" fill="${c.swad2}"/>
+      <circle cx="816" cy="372" r="70" fill="url(#${id}sk)"/>
+      <path d="M752 340 Q790 296 860 312 Q884 322 884 350" stroke="${c.line}" stroke-width="5" fill="none" opacity=".55"/>
+      <path d="M784 378 q 10 8 20 0" stroke="${c.line}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M828 378 q 10 8 20 0" stroke="${c.line}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="816" cy="408" rx="8" ry="4" fill="${c.line}" opacity=".5"/>`;
+  return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" class="w-full h-full block" aria-hidden="true">
+   <defs>
+    <linearGradient id="${id}bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.bg1}"/><stop offset="1" stop-color="${c.bg2}"/></linearGradient>
+    <radialGradient id="${id}sk" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="${c.skin1}"/><stop offset="1" stop-color="${c.skin2}"/></radialGradient>
+    <radialGradient id="${id}sw" cx=".45" cy=".35" r=".8"><stop offset="0" stop-color="${c.swad}"/><stop offset="1" stop-color="${c.swad2}"/></radialGradient>
+    <radialGradient id="${id}glow" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#7dd3fc" stop-opacity="${day?0:.12}"/><stop offset="1" stop-color="#7dd3fc" stop-opacity="0"/></radialGradient>
+    <filter id="${id}n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .8  0 0 0 0 .9  0 0 0 0 1  0 0 0 .5 0"/></filter>
+   </defs>
+   <rect width="1600" height="1000" fill="url(#${id}bg)"/>
+   <rect x="1180" y="560" width="420" height="440" fill="${day?'#6d7d89':'#0c1922'}"/>
+   <rect x="0" y="0" width="300" height="460" fill="${day?'#4e5e6a':'#0a1720'}"/>
+   <rect x="340" y="140" width="920" height="740" rx="26" fill="${c.rail2}"/>
+   <rect x="366" y="166" width="868" height="688" rx="18" fill="${c.mat}"/>
+   <rect x="390" y="190" width="820" height="640" rx="14" fill="${c.sheet}"/>
+   <g stroke="${c.mat}" stroke-width="3" opacity=".5">${Array.from({length:9},(_,i)=>`<line x1="390" x2="1210" y1="${250+i*68}" y2="${250+i*68}"/>`).join('')}</g>
+   ${rails}
+   <rect x="340" y="88" width="920" height="22" rx="10" fill="${c.rail}"/><rect x="340" y="908" width="920" height="22" rx="10" fill="${c.rail}"/>
+   ${baby}
+   <rect width="1600" height="1000" fill="url(#${id}glow)"/>
+   <rect width="1600" height="1000" filter="url(#${id}n)" opacity="${day?.06:.14}"/>
+  </svg>`;
+}
+$('#main-scene').innerHTML=scene();
+$('#mask-scene').innerHTML=scene();
+
+/* ---------- toast & sound ---------- */
+let toastT;
+function toast(msg,icon='check_circle'){ $('#toast-text').textContent=msg; $('#toast-icon').textContent=icon; $('#toast').hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>$('#toast').hidden=true,2600); }
+let soundOn=store.get('sound',true), actx=null;
+function beep(ms=400,freq=1760,vol=.12){
+  if(!soundOn) return;
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); const o=actx.createOscillator(),g=actx.createGain(); o.type='square'; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+ms/1000);}catch(e){}
+}
+function renderSound(){ const b=$('#sound-toggle'); b.querySelector('span').textContent=soundOn?'volume_up':'volume_off'; b.setAttribute('aria-pressed',soundOn); b.title=soundOn?'알림음 끄기':'알림음 켜기'; }
+$('#sound-toggle').onclick=()=>{ soundOn=!soundOn; store.set('sound',soundOn); renderSound(); toast(soundOn?'앱 알림음을 켰어요':'앱 알림음을 껐어요. 기기 부저는 계속 울립니다', soundOn?'volume_up':'volume_off'); };
+renderSound();
+
+/* ---------- routing ---------- */
+const pages=['live','timeline','settings','privacy'];
+function route(){
+  let p=(location.hash||'').replace('#',''); if(!pages.includes(p)) p='live';
+  $$('[data-view]').forEach(s=>s.hidden=s.dataset.view!==p);
+  $$('.nav-link').forEach(a=>{ const on=a.dataset.page===p; a.setAttribute('aria-current',on?'page':'false');
+    a.className=a.className.replace(/\b(bg-primary-container|text-on-primary-container|font-semibold|shadow-inner|text-on-surface-variant|hover:bg-surface-container-high|hover:text-on-surface)\b/g,'').replace(/\s+/g,' ');
+    a.classList.add(...(on?['bg-primary-container','text-on-primary-container','font-semibold','shadow-inner']:['text-on-surface-variant','hover:bg-surface-container-high','hover:text-on-surface']));
+    if(on && a.closest('#mobile-nav')) a.scrollIntoView({inline:'center',block:'nearest'});
+  });
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route); route();
+
+/* ---------- clock & live metrics ---------- */
+const fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+function nowKST(){ return fmt.format(new Date()).replace(',',''); }
+function tick(){ $('#live-clock').textContent=nowKST()+' KST'; }
+setInterval(tick,1000); tick();
+const d=nowKST().slice(0,10).split('-'); $('#base-date').textContent=`기준일: ${d[0]}. ${d[1]}. ${d[2]} (오늘)`;
+const hhmm=()=>nowKST().slice(11,19);
+
+setInterval(()=>{
+  const db=Math.round(29+Math.random()*7);
+  $('#db-badge').textContent=db+'dB'; $('#db-metric').textContent=`(${db} dB)`;
+  $$('#mic-bars div').forEach((b,i)=>b.style.height=Math.max(2,Math.round(Math.random()*12*(1-i*.2)))+'px');
+  $('#latency').textContent=(110+Math.round(Math.random()*25))+'ms 지연';
+  if(Math.random()<.2){ const t=(22.6+Math.random()*.4).toFixed(1); $('#temp-val').textContent=t+'°C'; $('#env-now').textContent=`${t}°C / ${$('#hum-val').textContent.split('%')[0]}%`; }
+  $('#npu-use').textContent=(26+Math.round(Math.random()*10))+'%';
+},1200);
+
+/* ---------- live feed ---------- */
+const feed=[
+  {c:'bg-primary ring-4 ring-primary/20',t:'뒤척임 감지 (정상 수면 움직임)',time:'14:22:10',d:'팔 다리 가벼운 움직임 6초간 감지 후 다시 안정 수면으로 복귀했습니다.'},
+  {c:'bg-secondary',t:'뒤척임 후 안정 자세 유지',time:'13:50:04',d:'수면 자세: 바로 누움 (얼굴 가림 없음, 호흡 리듬 양호)'},
+  {c:'bg-tertiary',t:'아기 잠듦 감지 (수면 세션 시작)',time:'12:10:18',d:'총 수면 지속: <strong class="text-on-surface">2시간 16분째</strong> 숙면 진행 중'}
+];
+function renderFeed(){
+  $('#live-feed').innerHTML=feed.slice(0,4).map(f=>`<div class="flex items-start gap-3"><div class="w-2 h-2 rounded-full ${f.c} mt-1.5 shrink-0"></div><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-1"><span class="text-xs font-semibold text-on-surface truncate">${f.t}</span><span class="text-[10px] mono text-on-surface-variant shrink-0">${f.time}</span></div><p class="text-[11px] text-on-surface-variant mt-0.5">${f.d}</p></div></div>`).join('');
+}
+function pushFeed(item){ feed.unshift(item); renderFeed(); }
+renderFeed();
+
+/* ---------- mask ---------- */
+let maskOn=store.get('mask',true), zoneDoor=store.get('door',false), shutter=store.get('shutter',false);
+function setSwitch(el,v){ el.setAttribute('aria-checked',v?'true':'false'); }
+function renderMask(){
+  $('#privacy-mask-layer').hidden=!maskOn; $$('.mask-toggle').forEach(t=>setSwitch(t,maskOn));
+  $('[data-zone=bed]').hidden=!maskOn; $('[data-zone=door]').hidden=!zoneDoor; setSwitch($('#t-zone-door'),zoneDoor);
+  $('#shutter-layer').hidden=!shutter; setSwitch($('#t-shutter'),shutter);
+  $('#conn-label').textContent=shutter?'아가방 · 영상 셔터 닫힘':'아가방 침대 정면 (1080p IR)';
+}
+$$('.mask-toggle').forEach(t=>t.onclick=()=>{ maskOn=!maskOn; store.set('mask',maskOn); renderMask(); toast(maskOn?'사생활 보호 구역 가림을 켰어요':'가림을 껐어요. 부모 침대 방향이 영상에 보입니다', maskOn?'visibility_off':'visibility'); });
+$('#t-zone-door').onclick=()=>{ zoneDoor=!zoneDoor; store.set('door',zoneDoor); renderMask(); };
+$('#t-shutter').onclick=()=>{ shutter=!shutter; store.set('shutter',shutter); renderMask(); toast(shutter?'프라이버시 셔터를 닫았어요':'프라이버시 셔터를 열었어요', shutter?'videocam_off':'videocam'); };
+renderMask();
+
+/* ---------- generic switches ---------- */
+['t-face','t-cry','t-env','t-dnd'].forEach(id=>{ const el=$('#'+id); const v=store.get(id, el.getAttribute('aria-checked')==='true'); setSwitch(el,v);
+  el.onclick=()=>{ const nv=el.getAttribute('aria-checked')!=='true'; setSwitch(el,nv); store.set(id,nv); synced(); }; });
+let syncT; function synced(){ $('#sync-label').textContent='기기에 적용 중…'; clearTimeout(syncT); syncT=setTimeout(()=>{$('#sync-label').textContent='기기와 동기화됨 · '+hhmm().slice(0,5)},700); }
+
+/* ---------- segmented ---------- */
+function seg(container,key,def,onChange){
+  let v=store.get(key,def);
+  const paint=()=>$$(container+' .seg-btn').forEach(b=>{ const on=b.dataset.v==String(v); b.className='seg-btn py-1.5 rounded-lg text-xs transition-colors '+(on?'bg-primary text-on-primary font-semibold':'text-on-surface-variant hover:text-on-surface'); b.setAttribute('aria-pressed',on); });
+  $$(container+' .seg-btn').forEach(b=>b.onclick=()=>{ v=b.dataset.v; store.set(key,v); paint(); onChange&&onChange(v); synced(); });
+  paint(); onChange&&onChange(v); return ()=>v;
+}
+const buzzerLevel=seg('#buzzer-level','buzzer','3',v=>{ $('#sim-text').textContent=`[가상 테스트] 기기 경보음 출력 중 (${v}단계 볼륨)`; });
+seg('#retention','retention','24시간',v=>$$('.retention-text').forEach(e=>e.textContent=v));
+
+/* ---------- sliders ---------- */
+function slider(id,key,fmtFn){ const el=$('#'+id); el.value=store.get(key,el.value); const up=()=>fmtFn(+el.value); el.oninput=()=>{up();store.set(key,el.value)}; el.onchange=synced; up(); }
+slider('prone-delay','proneDelay',v=>$$('.prone-delay').forEach(e=>e.textContent=v));
+slider('cry-db','cryDb',v=>$('#cry-db-val').textContent=v+' dB');
+slider('cry-sec','crySec',v=>$('#cry-sec-val').textContent=v+'초 이상');
+['temp-min','temp-max','hum-min','hum-max'].forEach(id=>{ const el=$('#'+id); el.value=store.get(id,el.value); el.onchange=()=>{store.set(id,el.value);synced();}; });
+
+/* ---------- recipients ---------- */
+let recipients=store.get('recipients',[{n:'엄마 폰',dev:'iPhone 15',on:true,me:true},{n:'아빠 폰',dev:'Galaxy S24',on:true}]);
+function renderRecipients(){
+  $('#recipients').innerHTML=recipients.map((r,i)=>`<div class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-container-high/60"><div class="flex items-center gap-2.5 min-w-0"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">phone_iphone</span><div class="min-w-0"><div class="text-xs font-medium text-on-surface truncate">${r.n.replace(/[<>&]/g,'')}${r.me?' <span class="text-[10px] text-primary">(나)</span>':''}</div><div class="text-[10px] text-on-surface-variant">${r.dev}</div></div></div><div class="flex items-center gap-2">${r.me?'':`<button type="button" data-rm="${i}" class="p-1 rounded text-on-surface-variant hover:text-error" aria-label="삭제"><span class="material-symbols-outlined text-[16px]">close</span></button>`}<button type="button" role="switch" aria-checked="${r.on}" data-tg="${i}" class="toggle" aria-label="${r.n} 알림"></button></div></div>`).join('');
+  $$('#recipients [data-tg]').forEach(b=>b.onclick=()=>{ const r=recipients[b.dataset.tg]; r.on=!r.on; store.set('recipients',recipients); renderRecipients(); synced(); });
+  $$('#recipients [data-rm]').forEach(b=>b.onclick=()=>{ recipients.splice(+b.dataset.rm,1); store.set('recipients',recipients); renderRecipients(); synced(); });
+}
+$('#add-recipient').onsubmit=e=>{ e.preventDefault(); const n=$('#recipient-name').value.trim(); if(!n){ toast('보호자 이름을 입력해 주세요','info'); return;} recipients.push({n,dev:'초대 링크 대기 중',on:true}); store.set('recipients',recipients); $('#recipient-name').value=''; renderRecipients(); toast(`${n}을(를) 추가했어요. 앱 설치 후 알림을 받습니다`,'person_add'); };
+renderRecipients();
+
+/* ---------- buttons on live ---------- */
+$('#buzzer-test-btn').onclick=function(){
+  const b=this; beep(350,1760); setTimeout(()=>beep(350,1760),500); setTimeout(()=>beep(350,1760),1000);
+  b.classList.add('bg-error/30'); b.innerHTML='<span class="material-symbols-outlined text-[17px] text-error">volume_up</span><span>부저 울림 중...</span>';
+  setTimeout(()=>{ b.classList.remove('bg-error/30'); b.innerHTML='<span class="material-symbols-outlined text-[17px] text-error">campaign</span><span>기기 부저 테스트</span>'; },2500);
+};
+const lightSteps=[0,15,30,60]; let li=store.get('light',1);
+function renderLight(){ $('#light-label').textContent=lightSteps[li]?`수유 조도 (${lightSteps[li]}%)`:'수유등 꺼짐'; $('#main-scene').style.filter=`brightness(${1+lightSteps[li]/200})`; }
+$('#light-btn').onclick=()=>{ li=(li+1)%lightSteps.length; store.set('light',li); renderLight(); }; renderLight();
+let irOn=true; $('#ir-btn').onclick=()=>{ irOn=!irOn; $('#ir-state').textContent=irOn?'ON':'OFF'; toast(irOn?'조도에 따라 IR 야간 모드를 자동 전환합니다':'IR 자동 전환을 껐어요. 어두우면 영상이 잘 안 보일 수 있어요', 'night_sight_auto'); };
+$('#fullscreen-btn').onclick=()=>{ const v=$('#viewport'); if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});} else if(v.requestFullscreen){ v.requestFullscreen().catch(()=>toast('이 화면에서는 전체화면을 지원하지 않아요','fullscreen')); } else toast('이 화면에서는 전체화면을 지원하지 않아요','fullscreen'); };
+
+// talkback push-to-talk
+const tb=$('#talkback-btn');
+const talkOn=e=>{ e.preventDefault(); tb.classList.add('bg-primary','text-on-primary'); $('#talkback-label').textContent='말씀하세요...'; };
+const talkOff=()=>{ if(!tb.classList.contains('bg-primary')) return; tb.classList.remove('bg-primary','text-on-primary'); $('#talkback-label').textContent='양방향 대화'; };
+tb.addEventListener('pointerdown',talkOn); ['pointerup','pointerleave','pointercancel'].forEach(ev=>tb.addEventListener(ev,talkOff));
+
+// snapshots
+let snaps=0;
+$('#snapshot-btn').onclick=()=>{
+  if(shutter){ toast('셔터가 닫혀 있어 캡처할 수 없어요','videocam_off'); return; }
+  snaps++; $('#snap-count').textContent=snaps; $('#snap-wrap').hidden=false;
+  const el=document.createElement('div'); el.className='shrink-0 w-36 rounded-lg overflow-hidden bg-surface-container-highest border border-outline-variant/30';
+  el.innerHTML=`<div class="aspect-[16/10] relative">${scene({crop:'440 160 760 475'})}</div><div class="px-2 py-1 text-[10px] mono text-on-surface-variant flex justify-between"><span>${hhmm()}</span><span class="text-primary">로컬</span></div>`;
+  $('#snap-strip').prepend(el);
+  const v=$('#viewport'); v.animate([{filter:'brightness(2)'},{filter:'brightness(1)'}],{duration:250});
+  updateStorage(); toast('순간 캡처를 기기에 저장했어요','photo_camera');
+};
+
+/* ---------- prone simulation ---------- */
+let simT=[], beepI;
+function setPose(prone){
+  $('#main-scene').innerHTML=scene({pose:prone?'prone':'supine'}); renderLight();
+  const inner=$('#ai-box-inner'), badge=$('#pose-badge');
+  inner.classList.toggle('border-error',prone); inner.classList.toggle('border-primary/80',!prone); inner.classList.toggle('bg-error/10',prone);
+  badge.classList.toggle('text-error',prone); badge.classList.toggle('border-error/60',prone); badge.classList.toggle('text-primary',!prone);
+  $('#skeleton').classList.toggle('text-error',prone); $('#skeleton').classList.toggle('text-primary',!prone);
+  $('#pose-label').textContent=prone?'엎드림 의심 · 코·입 가림 (Prone)':'수면 중 · 바로 누움 (Supine)';
+  $('#pose-conf').textContent=prone?'94.1%':'98.4%';
+  $('#face-label').textContent=prone?'안면 가림 의심':'안면 노출 정상';
+  $('#face-label').className=prone?'text-error':'text-primary';
+  $('#posture-text').textContent=prone?'엎드림 의심 (확인 필요)':'바르게 누움 (정상)';
+  $('#posture-code').textContent=prone?'Prone':'Supine'; $('#posture-code').className='text-xs mono font-semibold '+(prone?'text-error':'text-primary');
+  $('#posture-sub').textContent=prone?'코·입 가림 추정':'얼굴 개방 상태';
+  $('#metric-posture').classList.toggle('border-error/60',prone); $('#metric-posture').classList.toggle('bg-error-container/40',prone);
+  $('#posture-icon-wrap').className='w-10 h-10 rounded-lg flex items-center justify-center '+(prone?'bg-error/15 border border-error/30 text-error':'bg-primary/10 border border-primary/20 text-primary');
+  $('#posture-dot').className='inline-block w-2 h-2 rounded-full animate-pulse '+(prone?'bg-error':'bg-primary');
+  $('#alarm-frame').hidden=!prone;
+}
+function stopSim(){
+  simT.forEach(clearTimeout); simT=[]; clearInterval(beepI);
+  $('#sim-alert-banner').hidden=true; $('#trigger-simulation').disabled=false; $('#trigger-simulation').textContent='시뮬레이션 가동';
+  setPose(false);
+}
+$('#trigger-simulation').onclick=()=>{
+  if(location.hash!=='#live'&&location.hash!=='') location.hash='live';
+  const delay=+$('#prone-delay').value; const btn=$('#trigger-simulation'); btn.disabled=true;
+  setPose(true); let left=delay; btn.textContent=`경보까지 ${left}초`;
+  $('#viewport').scrollIntoView({behavior:'smooth',block:'center'});
+  const cd=()=>{ left--; if(left>0){ btn.textContent=`경보까지 ${left}초`; simT.push(setTimeout(cd,1000)); } else {
+      btn.textContent='경보 중'; $('#sim-alert-banner').hidden=false;
+      const lv=+buzzerLevel(); beep(300,1760,.05*lv); beepI=setInterval(()=>beep(300,1760,.05*lv),700);
+      pushFeed({c:'bg-error ring-4 ring-error/20',t:'[테스트] 엎드림 의심 경보 발송',time:hhmm(),d:`기기 부저 ${lv}단계 출력 · 보호자 ${recipients.filter(r=>r.on).length}명에게 긴급 푸시 전송`});
+  } };
+  simT.push(setTimeout(cd,1000));
+};
+$('#stop-sim-btn').onclick=()=>{ stopSim(); pushFeed({c:'bg-primary ring-4 ring-primary/20',t:'[테스트] 경보 해제 · 보호자 확인',time:hhmm(),d:'시뮬레이션을 종료하고 정상 모니터링으로 돌아왔습니다.'}); toast('경보 테스트를 마쳤어요. 기기와 폰에서 모두 울렸는지 확인하세요','task_alt'); };
+
+// checklist
+$$('.check-chip').forEach(b=>b.onclick=()=>{ const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); const ic=b.querySelector('span'); ic.textContent=on?'check_circle':'radio_button_unchecked'; ic.className='material-symbols-outlined text-[14px] '+(on?'text-primary':'text-outline'); b.classList.toggle('opacity-60',!on); });
+
+// guide
+$$('.open-guide').forEach(b=>b.onclick=()=>$('#guide-modal').hidden=false);
+$('#guide-close').onclick=()=>$('#guide-modal').hidden=true;
+$('#guide-modal').onclick=e=>{ if(e.target.id==='guide-modal') $('#guide-modal').hidden=true; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('#guide-modal').hidden=true; });
+
+/* ---------- timeline: segments ---------- */
+const segs=[
+  {f:1,c:'bg-secondary/60 rounded-l',t:'20:00–21:15 입면 · 얕은 수면'},
+  {f:2.5,c:'bg-primary',t:'21:15–23:40 안정적 깊은 수면'},
+  {f:.5,c:'bg-tertiary',t:'23:40–00:05 뒤척임 발생 (정상 범위)'},
+  {f:4,c:'bg-primary',t:'00:05–03:30 깊은 수면 · 호흡 안정'},
+  {f:.4,c:'bg-error',t:'03:35 야간 울음 (74dB / 50초) · 보호자 확인'},
+  {f:3.5,c:'bg-primary/80',t:'03:45–06:40 재수면 · 숙면 유지'},
+  {f:.7,c:'bg-tertiary',t:'06:40–07:05 기상 전 뒤척임 · 07:05 기상'},
+  {f:6,c:'bg-surface-container-high/40',t:'07:05–13:30 주간 활동 시간',idle:1},
+  {f:2,c:'bg-secondary/80',t:'13:30–15:10 낮잠 (얕은 수면 위주)'},
+  {f:.3,c:'bg-error',t:'14:15 낮잠 중 울음 (78dB / 35초) · 자가 진정'},
+  {f:4,c:'bg-surface-container-high/40 rounded-r',t:'15:10–현재 활동 시간',idle:1}
+];
+$('#seg-strip').innerHTML=segs.map((s,i)=>`<button type="button" data-i="${i}" class="seg h-full ${s.c} ${s.idle?'cursor-default':'hover:brightness-125 cursor-pointer'} transition" style="flex:${s.f}" aria-label="${s.t}" title="${s.t}"></button>`).join('');
+const total=segs.reduce((a,s)=>a+s.f,0);
+// axis: 20:00 -> 20:00 across 24.9 flex units approx; place labels evenly every 4h
+$('#seg-axis').innerHTML=['20:00','00:00','04:00','08:00','12:00','16:00','20:00'].map((t,i)=>`<span class="absolute -translate-x-1/2 ${i===0?'translate-x-0':''} ${i===6?'-translate-x-full':''}" style="left:${i/6*100}%">${t}</span>`).join('');
+$$('#seg-strip .seg').forEach(b=>b.onclick=()=>{ const s=segs[b.dataset.i]; $$('#seg-strip .seg').forEach(x=>x.classList.remove('ring-2','ring-on-surface')); if(!s.idle) b.classList.add('ring-2','ring-on-surface'); $('#seg-detail').innerHTML=`<span class="material-symbols-outlined text-[16px] ${s.c.includes('error')?'text-error':s.c.includes('tertiary')?'text-tertiary':'text-primary'}">schedule</span><span class="text-on-surface">${s.t}</span>`; });
+
+/* ---------- timeline: logs ---------- */
+const logs=[
+  {cat:'cry',time:'14:15',tag:'울음 감지',tagC:'bg-error/15 text-error',meta:'78dB 소음 감지',title:'35초 지속 후 자가 진정 · 뒤척임 연동 감지',sub:'Edge Audio NPU가 졸림 울음 유형(92% 유사)으로 로컬 라벨링',thumb:{crop:'480 180 680 425',mode:'day'},v:true},
+  {cat:'posture',time:'11:30',tag:'자세 감지',tagC:'bg-secondary/15 text-secondary',meta:'모션 벡터 정상',title:'옆으로 누움 → 바르게 누움 복귀 (정상 뒤척임)',sub:'안면 폐색 없음 · 호흡선 정상 유지 (경보 불필요 처리)',thumb:{crop:'520 220 600 375',mode:'day'},v:false},
+  {cat:'device',time:'09:12',tag:'기기 알림',tagC:'bg-surface-container-highest text-on-surface-variant',meta:'안전 프로토콜 실행',title:"Wi-Fi 신호 일시 약화 → '로컬 부저 독립 대기' 모드 전환",sub:'네트워크가 끊겨도 카메라 본체 부저가 엎드림 발생 시 즉시 독립적으로 울립니다',icon:'wifi_tethering_off',done:'자동 복구 완료 (09:14)'},
+  {cat:'posture',time:'07:05',tag:'기상 감지',tagC:'bg-tertiary/15 text-tertiary',meta:'아침 기상',title:'아기 눈뜸 및 옹알이 소리 감지',sub:'야간 수면 9시간 30분으로 마감 처리',thumb:{crop:'440 160 760 475',mode:'day'},v:true},
+  {cat:'cry',time:'03:35',tag:'울음 감지',tagC:'bg-error/15 text-error',meta:'74dB 소음 감지',title:'야간 울음 50초 · 보호자 방문 후 재수면',sub:'Edge Audio NPU가 배고픔 울음 유형(87% 유사)으로 로컬 라벨링',thumb:{crop:'480 180 680 425'},v:true}
+];
+let filter='all';
+function renderLogs(){
+  const list=logs.filter(l=>filter==='all'||l.cat===filter);
+  $('#log-list').innerHTML=list.map(l=>{ const i=logs.indexOf(l);
+    const thumb=l.icon?`<div class="w-16 h-16 rounded-lg flex-shrink-0 bg-surface-container-highest flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[28px]">${l.icon}</span></div>`
+      :`<div class="w-16 h-16 rounded-lg overflow-hidden relative flex-shrink-0 bg-surface-container-highest">${scene(l.thumb)}<span class="absolute bottom-0.5 right-0.5 text-[9px] px-1 rounded bg-black/70 text-on-surface mono">로컬</span></div>`;
+    const action=l.done?`<span class="px-2.5 py-1 rounded-lg text-xs text-on-surface-variant font-medium bg-surface-container-lowest">${l.done}</span>`
+      :`<button type="button" data-v="${i}" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${l.v?'bg-primary/10 text-primary hover:bg-primary/20':'bg-surface-container-highest text-on-surface-variant hover:text-on-surface'}"><span class="material-symbols-outlined text-[16px]">${l.v?'check_circle':'check'}</span>${l.v?'보호자 확인 완료':'확인 기록'}</button>`;
+    return `<div class="p-4 rounded-xl bg-surface-container-high/40 hover:bg-surface-container-high/70 transition-all flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"><div class="flex items-start gap-3.5 min-w-0">${thumb}<div class="space-y-1 min-w-0"><div class="flex flex-wrap items-center gap-2"><span class="text-xs mono font-semibold text-primary">${l.time}</span><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${l.tagC}">${l.tag}</span><span class="text-xs text-on-surface-variant">${l.meta}</span></div><p class="text-sm font-medium text-on-surface">${l.title}</p><p class="text-xs text-on-surface-variant">${l.sub}</p></div></div><div class="self-end sm:self-center shrink-0">${action}</div></div>`;
+  }).join('') || `<p class="text-sm text-on-surface-variant py-6 text-center">이 유형의 이벤트가 없어요.</p>`;
+  $$('#log-list [data-v]').forEach(b=>b.onclick=()=>{ logs[b.dataset.v].v=!logs[b.dataset.v].v; renderLogs(); });
+  $$('#filter-tabs .filter-btn').forEach(b=>{ const on=b.dataset.filter===filter; const n=b.dataset.filter==='all'?logs.length:logs.filter(l=>l.cat===b.dataset.filter).length; b.textContent=b.textContent.replace(/\s*\(\d+\)$/,'')+` (${n})`; b.className='filter-btn px-3 py-1 rounded-lg text-xs transition-all '+(on?'bg-primary text-on-primary font-semibold':'text-on-surface-variant hover:text-on-surface'); });
+  $('#thumb-count').textContent=logs.filter(l=>!l.icon).length;
+}
+$$('#filter-tabs .filter-btn').forEach(b=>b.onclick=()=>{ filter=b.dataset.filter; renderLogs(); });
+renderLogs();
+
+/* ---------- ranges ---------- */
+const ranges={
+  day:{sleep:[11,30],goal:92,deep:6.5,light:5.0,prone:0,cry:2,calm:'평균 45초 이내 진정',peak:'최고 소음 78dB',check:'2건 모두 부모 확인',night:'야간 기상 1회 포함',score:88,st:'양호한 수면 주기',sd:'야간 각성 1회로 안정적인 깊은 수면 구간이 전체의 56%를 차지했습니다.'},
+  week:{sleep:[11,52],goal:95,deep:6.8,light:5.1,prone:0,cry:3,calm:'평균 52초 이내 진정',peak:'하루 평균 3.1회',check:'21건 중 20건 확인',night:'야간 기상 평균 1.4회',score:85,st:'안정적인 일주일',sd:'평일 대비 주말 입면 시간이 25분 늦어졌어요. 취침 루틴을 일정하게 유지해 보세요.'},
+  month:{sleep:[11,41],goal:93,deep:6.4,light:5.3,prone:1,cry:4,calm:'평균 58초 이내 진정',peak:'하루 평균 3.6회',check:'108건 중 104건 확인',night:'야간 기상 평균 1.7회',score:83,st:'점점 길어지는 밤잠',sd:'한 달 전보다 연속 밤잠이 평균 40분 늘었습니다. 엎드림 의심 1건은 3초 만에 스스로 돌아누워 해제됐어요.'}
+};
+let range='day';
+function renderRange(){
+  const r=ranges[range];
+  $$('#range-tabs .range-btn').forEach(b=>b.className='range-btn px-3.5 py-1.5 rounded-lg text-xs transition-colors '+(b.dataset.range===range?'font-semibold bg-surface-container-high text-primary shadow-sm':'text-on-surface-variant hover:text-on-surface'));
+  const u=s=>`<span class="text-lg font-normal text-on-surface-variant">${s}</span>`;
+  $('#kpi-sleep').innerHTML=`${r.sleep[0]}${u('h')} ${r.sleep[1]}${u('m')}`; $('#kpi-goal').textContent=`목표 ${r.goal}%`; $('#kpi-bar').style.width=r.goal+'%';
+  $('#kpi-deep').textContent=`깊은 수면 ${r.deep}h`; $('#kpi-light').textContent=`얕은 수면 ${r.light}h`;
+  $('#kpi-prone').innerHTML=`${r.prone}${u('회')}`; $('#kpi-cry').innerHTML=`${r.cry}${u(range==='day'?'회':'회/일')}`;
+  $('#kpi-cry-calm').textContent=r.calm; $('#kpi-cry-peak').textContent=r.peak; $('#kpi-cry-check').textContent=r.check; $('#kpi-cry-night').textContent=r.night;
+  $('#score-label').textContent=`${r.score} / 100`; $('#score-num').textContent=r.score+'점'; $('#score-ring').setAttribute('stroke-dasharray',`${r.score}, 100`);
+  $('#score-title').textContent=r.st; $('#score-desc').textContent=r.sd;
+}
+$$('#range-tabs .range-btn').forEach(b=>b.onclick=()=>{ range=b.dataset.range; renderRange(); });
+renderRange();
+
+$('#export-btn').onclick=()=>{
+  const r=ranges[range]; const label={day:'오늘',week:'주간 평균',month:'월간 추세'}[range];
+  const txt=`[MomCam 수면 리포트 · ${label}]\n총 수면: ${r.sleep[0]}시간 ${r.sleep[1]}분 (깊은 ${r.deep}h / 얕은 ${r.light}h)\n엎드림 의심: ${r.prone}회\n울음 감지: ${r.cry}회 · ${r.calm}\n수면 품질 점수: ${r.score}/100\n※ 의료기기가 아닌 보조 모니터링 기록입니다.`;
+  const ok=()=>toast('수면 리포트를 클립보드에 복사했어요','content_copy');
+  try{ navigator.clipboard.writeText(txt).then(ok,()=>toast('복사할 수 없는 환경이에요','error')); }catch(e){ toast('복사할 수 없는 환경이에요','error'); }
+};
+
+/* ---------- privacy: storage & access ---------- */
+function updateStorage(){ const gb=(3.2+snaps*0.002).toFixed(1); $('#storage-label').textContent=`${gb} GB / 32 GB`; $('#storage-bar').style.width=(gb/32*100)+'%'; }
+$('#wipe-btn').onclick=()=>{ $('#wipe-btn').hidden=true; $('#wipe-confirm').hidden=false; };
+$('#wipe-no').onclick=()=>{ $('#wipe-btn').hidden=false; $('#wipe-confirm').hidden=true; };
+$('#wipe-yes').onclick=()=>{ snaps=0; $('#snap-strip').innerHTML=''; $('#snap-wrap').hidden=true; $('#snap-count').textContent=0;
+  logs.forEach(l=>{ if(!l.icon){ l.thumb=null; l.icon='hide_image'; l.wiped=true; }}); logs.forEach(l=>{ if(l.wiped&&!l.done) l.done=l.v?'보호자 확인 완료':'확인 전'; }); renderLogs();
+  $('#storage-label').textContent='0.4 GB / 32 GB'; $('#storage-bar').style.width='1.3%'; $('#thumb-count').textContent=0;
+  $('#wipe-btn').hidden=false; $('#wipe-confirm').hidden=true; toast('저장된 영상 기록을 모두 삭제했어요','delete'); };
+const access=[['오늘 14:26','엄마','iPhone 15','실시간 보기'],['오늘 03:36','아빠','Galaxy S24','경보 알림에서 열기'],['어제 21:02','엄마','iPhone 15','실시간 보기 · 양방향 대화'],['어제 13:40','아빠','Galaxy S24','타임라인 조회']];
+$('#access-log').innerHTML=access.map(a=>`<tr class="border-b border-outline-variant/15"><td class="py-2 pr-3 text-on-surface-variant">${a[0]}</td><td class="py-2 pr-3 font-body">${a[1]}</td><td class="py-2 pr-3">${a[2]}</td><td class="py-2 font-body text-on-surface-variant">${a[3]}</td></tr>`).join('');
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 브라우저 탭에 보이는 제목 -->
+  <title>맘캠 MomCam | 나만의 피지컬 AI</title>
+  <meta name="description" content="아기의 울음과 엎드림 의심 자세를 기기 안에서 분석해 보호자에게 알리는 온디바이스 AI 홈카메라">
+
+  <!-- 글꼴: Pretendard -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+
+  <style>
+    /* ===== 색상 설정: 이 값만 바꿔도 전체 분위기가 바뀝니다 ===== */
+    :root {
+      --bg: #F5F6F3;       /* 배경 */
+      --ink: #1E2422;      /* 기본 글자 */
+      --muted: #5E6764;    /* 보조 글자 */
+      --line: #D5D9D4;     /* 구분선 */
+      --accent: #8FD3F5;   /* 강조 색 */
+      --surface: #FFFFFF;  /* 이미지 영역 등 */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      word-break: keep-all;
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+    /* ----- 상단 메뉴 ----- */
+    header { border-bottom: 1px solid var(--line); }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      height: 64px;
+    }
+    .logo { font-weight: 800; font-size: 1.1rem; text-decoration: none; }
+    .nav ul { display: flex; gap: 24px; list-style: none; }
+    .nav ul a { text-decoration: none; color: var(--muted); font-size: 0.95rem; }
+    .nav ul a:hover { color: var(--ink); }
+
+    /* ----- 첫 화면 ----- */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+      align-items: center; padding: 88px 0;
+    }
+    .hero h1 { word-break: keep-all;
+     
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      font-weight: 800; line-height: 1.1; letter-spacing: -0.03em;
+    }
+    .hero .tagline { margin-top: 20px; font-size: 1.2rem; color: var(--muted); max-width: 30em; }
+    .button {
+      display: inline-block; margin-top: 32px; padding: 14px 26px;
+      background: var(--ink); color: var(--bg);
+      text-decoration: none; font-weight: 600; border-radius: 999px;
+    }
+    .button:hover { background: #000; }
+    .button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); margin-left: 8px; }
+    .button.ghost:hover { border-color: var(--ink); background: transparent; }
+    .note { margin-top: 28px; padding: 16px 20px; border-left: 4px solid #E05A4F; background: var(--surface); border-radius: 8px; color: var(--muted); font-size: .95rem; max-width: 46em; }
+
+    /* 제품 이미지 자리: 이미지를 넣으면 회색 안내 문구 대신 사진이 보입니다 */
+    .product-shot {
+      background: var(--accent);
+      border-radius: 24px;
+      padding: 28px;
+    }
+    .product-shot .frame {
+      aspect-ratio: 4 / 3;
+      background: var(--surface);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); text-align: center; overflow: hidden;
+    }
+    .product-shot .frame img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ----- 공통 섹션 ----- */
+    section.block { padding: 80px 0; border-top: 1px solid var(--line); }
+    section.block h2 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
+    section.block .lead { color: var(--muted); max-width: 36em; font-size: 1.05rem; }
+
+    /* ----- 작동 방식: 감지 → 판단 → 행동 ----- */
+    .flow {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+      margin-top: 40px; list-style: none; counter-reset: step;
+    }
+    .flow li {
+      padding: 0 28px 0 0; position: relative; counter-increment: step;
+    }
+    .flow li::before {
+      content: counter(step);
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; margin-bottom: 18px;
+      border-radius: 50%; background: var(--accent);
+      font-weight: 800;
+    }
+    /* 단계 사이 연결선 */
+    .flow li:not(:last-child)::after {
+      content: ""; position: absolute; top: 20px; left: 52px; right: 12px;
+      height: 2px; background: var(--line);
+    }
+    .flow h3 { font-size: 1.2rem; margin-bottom: 6px; }
+    .flow p { color: var(--muted); }
+
+    /* ----- 주요 기능 ----- */
+    .features { margin-top: 40px; list-style: none; }
+    .features li {
+      display: grid; grid-template-columns: 220px 1fr; gap: 24px;
+      padding: 24px 0; border-bottom: 1px solid var(--line);
+    }
+    .features li:first-child { border-top: 1px solid var(--line); }
+    .features h3 { font-size: 1.15rem; }
+    .features p { color: var(--muted); }
+
+    /* ----- 만든 사람 / 하단 ----- */
+    footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 0.95rem; }
+    footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+    /* ----- 모바일 화면 ----- */
+    @media (max-width: 760px) {
+      .nav ul { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 56px 0; gap: 36px; }
+      .flow { grid-template-columns: 1fr; gap: 32px; }
+      .flow li::after { display: none; }
+      .features li { grid-template-columns: 1fr; gap: 4px; }
+      section.block { padding: 56px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 상단 메뉴 ===== -->
+  <header>
+    <nav class="wrap nav">
+      <a class="logo" href="#">맘캠 MomCam</a>
+      <ul>
+        <li><a href="#problem">문제</a></li>
+        <li><a href="#how">작동 방식</a></li>
+        <li><a href="#features">기능</a></li>
+        <li><a href="demo.html">데모</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===== 첫 화면: 제품 이름과 한 줄 소개 ===== -->
+    <div class="wrap hero">
+      <div>
+        <h1>맘캠<br>MomCam</h1>
+        <p class="tagline">아기가 자는 동안 울음과 엎드림 의심 자세를 카메라 안에서 바로 분석해, 기기 경보와 스마트폰 알림으로 보호자에게 알려 주는 홈카메라입니다.</p>
+        <a class="button" href="demo.html">앱 화면 데모 보기</a>
+        <a class="button ghost" href="#how">작동 방식 보기</a>
+      </div>
+
+      <div class="product-shot">
+        <div class="frame">
+          <!-- 이미지를 넣으려면 아래 문구를 지우고 이렇게 바꾸세요:
+               <img src="images/product.png" alt="제품 사진 설명"> -->
+          <a href="demo.html" aria-label="맘캠 앱 화면 데모 열기" style="display:block;width:100%;height:100%">
+          <svg viewBox="0 0 400 300" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="적외선 카메라로 본 침대 위에서 바로 누워 자는 아기와 AI 감지 박스">
+            <rect width="400" height="300" fill="#0B1824"/>
+            <rect x="70" y="40" width="260" height="220" rx="10" fill="#2B4B5E"/>
+            <rect x="80" y="50" width="240" height="200" rx="6" fill="#23404F"/>
+            <ellipse cx="200" cy="175" rx="42" ry="56" fill="#5E8399"/>
+            <circle cx="200" cy="112" r="21" fill="#C9DCE6"/>
+            <path d="M190 113q3 3 6 0M204 113q3 3 6 0" stroke="#4E6B7B" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <rect x="148" y="84" width="104" height="150" rx="6" fill="none" stroke="#7DD3FC" stroke-width="2"/>
+            <rect x="148" y="66" width="128" height="16" rx="3" fill="#0F1524"/>
+            <text x="154" y="77.5" fill="#7DD3FC" font-size="9" font-family="sans-serif">바로 누움 · 정상 98.4%</text>
+            <circle cx="30" cy="24" r="4" fill="#FF6B6B"/>
+            <text x="40" y="27.5" fill="#E0E8F0" font-size="9" font-family="sans-serif" font-weight="700">LIVE</text>
+            <text x="20" y="286" fill="#A0B4C4" font-size="8" font-family="monospace">ON-DEVICE AI · 영상 클라우드 미전송</text>
+          </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 해결하려는 문제 ===== -->
+    <section class="block" id="problem">
+      <div class="wrap">
+        <h2>밤새 화면을 지켜볼 수는 없으니까요</h2>
+        <p class="lead">부모는 아기가 자는 동안에도 울음이나 수면 자세 변화를 살펴야 합니다. 기존 홈카메라는 영상을 계속 보거나 단순 소리 알림에 기대는 경우가 많아, 화면을 놓치면 상황을 모르고 지나가거나 잦은 오탐 알림에 지치기 쉽습니다. 맘캠은 영상과 소리를 함께 분석해 꼭 필요한 순간에만 알리고, 분석은 모두 기기 안에서 처리해 아기 영상이 집 밖으로 나가지 않습니다.</p>
+        <p class="note"><strong>안전 안내</strong> · 맘캠은 보호자를 돕는 보조 모니터링 기기이며 의료기기가 아닙니다. 영아돌연사증후군(SIDS)을 예방하지 못하며, 알림 여부와 관계없이 보호자가 직접 아기를 확인해야 합니다.</p>
+      </div>
+    </section>
+
+    <!-- ===== 작동 방식: 피지컬 AI의 감지 → 판단 → 행동 ===== -->
+    <section class="block" id="how">
+      <div class="wrap">
+        <h2>이렇게 작동합니다</h2>
+        <p class="lead">카메라 속 저전력 AI 칩이 영상과 소리를 실시간으로 읽고, 위험이 의심되면 인터넷 연결과 상관없이 기기가 먼저 반응합니다.</p>
+
+        <ol class="flow">
+          <li>
+            <h3>감지</h3>
+            <p>1080p 적외선 카메라와 마이크가 아기의 자세, 움직임, 울음소리를 받아들입니다. 조도·온습도 센서는 방 환경을 함께 봅니다.</p>
+          </li>
+          <li>
+            <h3>판단</h3>
+            <p>기기 안의 자세 인식 모델과 울음 분류 모델이 프레임 간 움직임과 소리 패턴을 함께 보고, 일시적인 뒤척임이나 TV 소리 같은 오탐을 걸러 냅니다. 판단이 어려우면 "확인 필요"로 처리합니다.</p>
+          </li>
+          <li>
+            <h3>행동</h3>
+            <p>엎드림 의심이 이어지면 5초 이내 기기 본체에서 경보음을 울리고, 등록된 모든 보호자 폰으로 푸시 알림을 보냅니다. Wi-Fi가 끊겨도 기기 경보는 따로 동작합니다.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== 주요 기능: 항목을 복사해서 늘리거나 지워도 됩니다 ===== -->
+    <section class="block" id="features">
+      <div class="wrap">
+        <h2>주요 기능</h2>
+
+        <ul class="features">
+          <li>
+            <h3>엎드림 의심 즉시 경보</h3>
+            <p>코·입이 가려질 수 있는 자세가 기준 시간 이상 이어지면 기기 부저와 앱 알림이 동시에 울립니다. 목표는 감지 후 5초 이내 경보입니다.</p>
+          </li>
+          <li>
+            <h3>울음 감지와 수면 타임라인</h3>
+            <p>울음의 크기와 지속 시간을 기준으로 알림을 보내고, 하루의 수면 구간·뒤척임·울음 기록을 타임라인으로 정리합니다.</p>
+          </li>
+          <li>
+            <h3>온디바이스 사생활 보호</h3>
+            <p>영상과 음성은 상시 클라우드로 전송하지 않습니다. 부모 침대 쪽 같은 구역은 가림 처리하고, 저장된 썸네일은 정해진 시간이 지나면 자동으로 지워집니다.</p>
+          </li>
+          <li>
+            <h3>오프라인 페일세이프</h3>
+            <p>네트워크가 끊기면 앱 알림은 보류되지만, 카메라 본체 경보는 독립적으로 대기하며 울립니다.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== 하단: 만든 사람 정보 ===== -->
+  <footer>
+    <div class="wrap">
+      <span>만든 사람: 다혜</span>
+      <span>나만의 피지컬 AI 제품 기획 과제</span>
+    </div>
+  </footer>
+
+</body>
+</html>
