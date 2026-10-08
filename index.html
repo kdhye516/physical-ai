@@ -122,6 +122,16 @@
     .features h3 { font-size: 1.15rem; }
     .features p { color: var(--muted); }
 
+    /* ----- 보고서 ----- */
+    .reports { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; list-style: none; }
+    .reports li { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .reports .num { font-size: .8rem; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
+    .reports h3 { font-size: 1.15rem; }
+    .reports ul { list-style: none; color: var(--muted); font-size: .93rem; line-height: 1.6; display: grid; gap: 4px; }
+    .reports ul li { background: none; border: 0; padding: 0 0 0 14px; border-radius: 0; position: relative; display: block; }
+    .reports ul li::before { content: ""; position: absolute; left: 0; top: .7em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .reports a.more { margin-top: auto; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+
     /* ----- 만든 사람 / 하단 ----- */
     footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 0.95rem; }
     footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
@@ -133,6 +143,7 @@
       .flow { grid-template-columns: 1fr; gap: 32px; }
       .flow li::after { display: none; }
       .features li { grid-template-columns: 1fr; gap: 4px; }
+      .reports { grid-template-columns: 1fr; }
       section.block { padding: 56px 0; }
     }
   </style>
@@ -147,6 +158,7 @@
         <li><a href="#problem">문제</a></li>
         <li><a href="#how">작동 방식</a></li>
         <li><a href="#features">기능</a></li>
+        <li><a href="#reports">보고서</a></li>
         <li><a href="demo.html">데모</a></li>
       </ul>
     </nav>
@@ -159,7 +171,7 @@
         <h1>맘캠<br>MomCam</h1>
         <p class="tagline">아기가 자는 동안 울음과 엎드림 의심 자세를 카메라 안에서 바로 분석해, 기기 경보와 스마트폰 알림으로 보호자에게 알려 주는 홈카메라입니다.</p>
         <a class="button" href="demo.html">앱 화면 데모 보기</a>
-        <a class="button ghost" href="#how">작동 방식 보기</a>
+        <a class="button ghost" href="report.html">보고서 보기</a>
       </div>
 
       <div class="product-shot">
@@ -239,6 +251,50 @@
           <li>
             <h3>오프라인 페일세이프</h3>
             <p>네트워크가 끊기면 앱 알림은 보류되지만, 카메라 본체 경보는 독립적으로 대기하며 울립니다.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== 프로젝트 보고서 ===== -->
+    <section class="block" id="reports">
+      <div class="wrap">
+        <h2>프로젝트 보고서</h2>
+        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 세 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
+
+        <ul class="reports">
+          <li>
+            <span class="num">REPORT 01</span>
+            <h3>제품 요구사항 (PRD)</h3>
+            <ul>
+              <li>엎드림 의심 감지 후 5초 이내 기기 경보</li>
+              <li>영상·음성은 기기 안에서만 분석 (클라우드 상시 전송 없음)</li>
+              <li>Wi-Fi가 끊겨도 기기 자체 경보 동작</li>
+              <li>의료기기가 아닌 보조 모니터링 기기로 범위 한정</li>
+            </ul>
+            <a class="more" href="report.html#prd">PRD 전체 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 02</span>
+            <h3>데이터 전처리 설계</h3>
+            <ul>
+              <li>영상 11단계: 마스킹 → 왜곡 보정 → 침대 영역 크롭 → 노이즈 제거 → CLAHE 등</li>
+              <li>오디오 8단계: 고역통과 필터 → 소음 억제 → 음량 정규화 → 멜 스펙트로그램</li>
+              <li>사생활 보호를 위해 마스킹을 가장 먼저 적용</li>
+              <li>파이썬 전처리 코드와 단계별 결과 이미지 포함</li>
+            </ul>
+            <a class="more" href="report.html#pre">전처리 보고서 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 03</span>
+            <h3>YOLO 모델 선정·학습·검증</h3>
+            <ul>
+              <li>YOLO26n-pose 선정: 파라미터 2.9M, INT8 약 3MB</li>
+              <li>아기용 키포인트 7개 → 자세 4종 판정</li>
+              <li>COCO 전이학습 + 밤 IR·이불 가림 맞춤 증강</li>
+              <li>검증 3단계: 이미지 성능 → 5초 경보 이벤트 → 실제 기기</li>
+            </ul>
+            <a class="more" href="report.html#model">모델 보고서 보기</a>
           </li>
         </ul>
       </div>
