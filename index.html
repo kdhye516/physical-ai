@@ -123,7 +123,7 @@
     .features p { color: var(--muted); }
 
     /* ----- 보고서 ----- */
-    .reports { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; list-style: none; }
+    .reports { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 40px; list-style: none; }
     .reports li { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
     .reports .num { font-size: .8rem; font-weight: 700; letter-spacing: .06em; color: var(--muted); }
     .reports h3 { font-size: 1.15rem; }
@@ -260,7 +260,7 @@
     <section class="block" id="reports">
       <div class="wrap">
         <h2>프로젝트 보고서</h2>
-        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 세 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
+        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 네 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
 
         <ul class="reports">
           <li>
@@ -295,6 +295,17 @@
               <li>검증 3단계: 이미지 성능 → 5초 경보 이벤트 → 실제 기기</li>
             </ul>
             <a class="more" href="report.html#model">모델 보고서 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 04</span>
+            <h3>비전 AI 모델 6종 비교</h3>
+            <ul>
+              <li>YOLOE·DINO-X: 학습 없이 이름만으로 물체 찾기</li>
+              <li>SAM 3: 단어 하나로 모든 물체 분할·추적</li>
+              <li>SigLIP 2·OCR·MediaPipe: 이미지-문장 검색, 글자 인식, 관절 추정</li>
+              <li>결론: 큰 모델은 데이터 제작 도구로, 기기에는 YOLO26n-pose</li>
+            </ul>
+            <a class="more" href="report.html#vision">비전 모델 보고서 보기</a>
           </li>
         </ul>
       </div>
