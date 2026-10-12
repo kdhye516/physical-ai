@@ -226,7 +226,7 @@
       var doc = document.getElementById("doc");
       if (cache[key]) { render(key, cache[key]); return; }
       doc.innerHTML = '<p class="status">보고서를 불러오는 중입니다…</p>';
-      fetch(RAW + d.path, { cache: "no-cache" })
+      fetch(RAW + d.path + "?t=" + Date.now(), { cache: "no-cache" })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
         .then(function (md) { cache[key] = md; render(key, md); })
         .catch(function () {
