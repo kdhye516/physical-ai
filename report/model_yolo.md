@@ -15,6 +15,7 @@
 | 영상 모델 | **YOLO26n-pose** (Ultralytics) — 아기 검출 + 관절 위치(키포인트) 추정 |
 | 자세 판정 | 키포인트로 만든 특징 → 소형 분류기(MLP) → 바로 누움 / 옆으로 / 엎드림 / 확인 필요 |
 | 비교 모델 | YOLO26n-cls (침대 영역 이미지를 바로 자세 4종으로 분류) |
+| 검토한 대안 | MediaPipe Pose → 주 모델에서 제외, 시제품 도구로 사용 (2-4 참고) |
 | 오디오 모델 | YOLO가 아닌 **경량 오디오 CNN** (로그 멜 스펙트로그램 입력) |
 | 배포 형태 | INT8 양자화 후 기기 NPU에서 실행 (LiteRT 등 NPU 벤더가 지원하는 형식으로 변환) |
 | 핵심 목표 | 엎드림 의심 재현율 95% 이상, 오탐 하루 1회 이하, 감지 후 5초 이내 경보 |
@@ -64,7 +65,26 @@ COCO 데이터셋 기준 pose 모델 비교 (Ultralytics 공식 문서 수치, 6
 - **속도:** 맘캠은 640px이 아니라 **256×192**로 줄여 넣으므로 연산량이 640px 대비 약 1/8로 줄어든다. 5fps(프레임당 200ms) 안에 처리할 여유가 있다.
 - **정확도:** 맘캠은 화면에 아기 한 명만, 크게 나온다(ROI 크롭 덕분). 여러 사람이 작게 나오는 COCO보다 쉬운 문제라 작은 모델로도 충분할 것으로 예상한다. 단, 이는 가정이므로 6장의 실험으로 확인한다.
 
-### 2-4. 오디오(울음)에는 YOLO를 쓰지 않는 이유
+### 2-4. MediaPipe Pose 대신 YOLO26n-pose를 고른 이유
+
+MediaPipe Pose Landmarker(Google의 BlazePose 기반)는 설치가 쉽고 휴대폰에서도 실시간으로 도는 좋은 자세 추정 도구다. 그래서 처음에는 함께 후보로 검토했지만, 맘캠의 **주 모델**로는 YOLO26n-pose를 골랐다. 이유는 다음과 같다.
+
+| 비교 항목 | MediaPipe Pose Landmarker | YOLO26n-pose | 맘캠에서 중요한 이유 |
+|---|---|---|---|
+| **사람을 찾는 방식** | 얼굴(머리)이 보인다고 가정하고, 얼굴 검출기로 사람 위치를 찾은 뒤 관절을 추정하는 2단계 구조 | 아기 몸 전체를 검출하면서 키포인트를 한 번에 추정하는 1단계 구조 | **엎드리면 얼굴이 가려진다.** 얼굴을 기준으로 사람을 찾는 방식은 가장 위험한 순간에 아기를 놓칠 수 있다 |
+| **내 데이터로 재학습** | 공식 맞춤 학습 도구(Model Maker)가 포즈 작업을 지원하지 않음 | 공식 학습 코드 제공, 라벨 데이터만 있으면 재학습 | 속싸개를 한 아기, 밤 IR 흑백 영상은 기존 모델이 거의 본 적 없는 데이터라 재학습이 꼭 필요 |
+| **키포인트 구성** | 성인 전신 33개로 고정 | `kpt_shape`로 개수를 직접 정함 (맘캠은 7개) | 속싸개·이불에 가려 안 보이는 손목·무릎·발목을 빼고, 얼굴·어깨만 집중 학습 |
+| **학습 목적** | 피트니스·댄스·요가처럼 서 있는 성인의 다양한 동작 | 맘캠 데이터(누운 아기)로 맞춤 학습 | 아기는 머리가 크고 팔다리가 짧아 체형 비율이 성인과 다름 |
+| **성능 관리** | 제공된 모델 성능을 그대로 사용 | mAP-pose, 엎드림 재현율을 직접 측정하고 개선 | 엎드림 재현율 95% 이상이라는 목표를 수치로 관리해야 함 |
+| **기기 배포** | 앱·웹용 실행 환경(Android·iOS·Web·Python)에 맞춰짐 | TFLite·ONNX 등으로 내보내고 INT8 양자화 가능 | 카메라 칩(NPU) 제조사 도구로 변환하기 쉬운 형식이 필요 |
+
+**MediaPipe가 더 나은 점도 분명히 있다.** 학습 없이 바로 쓸 수 있고, 33개 관절로 손·발까지 자세히 나오며, 휴대폰에서도 가볍게 돈다. 그래서 맘캠에서는 MediaPipe를 버리지 않고 **개발 초기의 시제품 도구**로 쓴다. 성인 모델로 "얼굴·어깨가 보이면 바로 누움"이라는 판정 규칙과 5초 경보 흐름을 먼저 만들어 보고, 실제 아기 데이터가 모이면 YOLO26n-pose로 바꾼다.
+
+**한 줄 요약:** MediaPipe는 "바로 쓰는 완성품", YOLO-pose는 "내 문제에 맞게 다시 가르칠 수 있는 모델"이다. 맘캠은 얼굴이 가려지는 엎드림을 잡아야 하고, 아기·밤 IR 데이터로 다시 학습해야 하므로 YOLO-pose가 맞다.
+
+> 이 판단은 설계 단계의 판단이다. 6-3의 비교 실험에 "MediaPipe Pose vs YOLO26n-pose"를 넣어, 같은 시험셋(특히 엎드림·밤 IR 조건)에서 실제 수치로 확인한다.
+
+### 2-5. 오디오(울음)에는 YOLO를 쓰지 않는 이유
 
 YOLO는 이미지 속 물체의 **위치**를 찾는 모델이다. 울음 감지는 "이 1초 동안 울음이 있었나"를 판단하는 **분류** 문제라서 위치 정보가 필요 없다. 멜 스펙트로그램을 이미지처럼 YOLO-cls에 넣을 수도 있지만, 오디오 전용 경량 CNN(입력 96×64)이 더 작고 빠르다. 따라서 울음 감지는 별도 오디오 CNN으로 설계한다.
 
@@ -267,6 +287,7 @@ model.export(format="tflite", imgsz=256, int8=True, data="data/momcam_pose.yaml"
 
 | 실험 | 비교 대상 | 확인할 점 |
 |---|---|---|
+| 모델 종류 | MediaPipe Pose (학습 없이) vs YOLO26n-pose (아기 데이터로 학습) | 엎드림·밤 IR 조건에서 아기 검출률과 엎드림 재현율 차이 확인 |
 | 모델 크기 | YOLO26n-pose vs YOLO26s-pose | s가 n보다 엎드림 재현율이 크게 높지 않다면 n 유지 |
 | 판정 방식 | pose + MLP vs YOLO26n-cls | 정확도가 비슷하면 이유를 설명할 수 있는 pose 방식 유지 |
 | 전처리 효과 | CLAHE·노이즈 제거 있음 vs 없음 | 밤 IR 조건 성능 차이로 전처리 효과 확인 |
@@ -319,5 +340,8 @@ model.export(format="tflite", imgsz=256, int8=True, data="data/momcam_pose.yaml"
 
 - Ultralytics, *YOLO26* 모델 문서: https://docs.ultralytics.com/models/yolo26/
 - Ultralytics, *Pose Estimation* 작업 문서 (YOLO26 pose 성능표): https://docs.ultralytics.com/tasks/pose/
+- Google Research 블로그, *On-device, Real-time Body Pose Tracking with MediaPipe BlazePose*: https://research.google/blog/on-device-real-time-body-pose-tracking-with-mediapipe-blazepose/
+- Google, *MediaPipe Pose Landmarker*: https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker
+- Google, *MediaPipe Model Maker* (지원 작업 목록): https://developers.google.com/edge/mediapipe/solutions/model_maker
 - 맘캠 PRD: `PRD/PRD.md`
 - 맘캠 전처리 설계: `report/preprocessing.md`
