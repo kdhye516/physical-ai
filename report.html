@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>맘캠 MomCam 보고서 | 나만의 피지컬 AI</title>
-  <meta name="description" content="맘캠 제품 요구사항(PRD), 데이터 전처리 설계, YOLO 모델 선정·학습·검증, 비전 AI 모델 6종 비교 보고서">
+  <meta name="description" content="맘캠 제품 요구사항(PRD), 데이터 전처리 설계, YOLO 모델 선정·학습·검증, 비전 AI 모델 6종 비교, 하드웨어 부품 구성 보고서">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <style>
     :root {
@@ -38,7 +38,7 @@
     .intro p { margin-top: 16px; color: var(--muted); max-width: 40em; font-size: 1.05rem; }
 
     /* 보고서 카드 */
-    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
     .card {
       background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px;
       text-align: left; cursor: pointer; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 8px;
@@ -113,7 +113,7 @@
     <section class="wrap intro">
       <div class="eyebrow">PROJECT REPORT</div>
       <h1>맘캠 개발 보고서</h1>
-      <p>제품 기획(PRD)부터 데이터 전처리 설계, YOLO 기반 모델 선정·학습·검증 계획, 비전 AI 모델 비교까지 정리했습니다. 아래에서 보고서를 고르면 전체 내용을 볼 수 있습니다.</p>
+      <p>제품 기획(PRD)부터 데이터 전처리 설계, YOLO 기반 모델 선정·학습·검증 계획, 비전 AI 모델 비교, 하드웨어 부품 구성까지 정리했습니다. 아래에서 보고서를 고르면 전체 내용을 볼 수 있습니다.</p>
 
       <div class="cards" role="tablist" aria-label="보고서 선택">
         <button class="card" role="tab" id="tab-prd" data-doc="prd" aria-selected="true" aria-controls="doc">
@@ -135,6 +135,11 @@
           <span class="num">REPORT 04</span>
           <h2>비전 AI 모델 6종 비교</h2>
           <p>YOLOE, DINO-X, SAM 3, SigLIP, OCR, MediaPipe의 기능·사용 예시와 맘캠 활용</p>
+        </button>
+        <button class="card" role="tab" id="tab-hw" data-doc="hw" aria-selected="false" aria-controls="doc">
+          <span class="num">REPORT 05</span>
+          <h2>하드웨어 부품 구성</h2>
+          <p>SoC·센서·마이크·부저·Wi-Fi·전원 부품의 전압, 전류, 통신 방식과 전력 예산</p>
         </button>
       </div>
     </section>
@@ -167,7 +172,8 @@
       prd:   { path: "PRD/PRD.md" },
       pre:   { path: "report/preprocessing.md", figures: true },
       model: { path: "report/model_yolo.md" },
-      vision: { path: "report/vision_models.md" }
+      vision: { path: "report/vision_models.md" },
+      hw: { path: "report/hardware.md" }
     };
     var cache = {};
 
