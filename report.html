@@ -66,6 +66,7 @@
     article blockquote { margin: 16px 0; padding: 14px 18px; border-left: 4px solid var(--accent); background: var(--bg); border-radius: 8px; color: var(--ink); }
     article blockquote p { margin: 0; }
     article a { overflow-wrap: anywhere; word-break: break-all; }
+    article img { display: block; max-width: 100%; height: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 10px; }
     article hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
     article code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; background: var(--code); padding: 2px 6px; border-radius: 5px; }
     article pre { background: #1E2422; color: #E9ECE8; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; line-height: 1.55; }
@@ -139,7 +140,7 @@
         <button class="card" role="tab" id="tab-hw" data-doc="hw" aria-selected="false" aria-controls="doc">
           <span class="num">REPORT 05</span>
           <h2>하드웨어 부품 구성</h2>
-          <p>SoC·센서·마이크·부저·Wi-Fi·전원 부품의 전압, 전류, 통신 방식과 전력 예산</p>
+          <p>SoC·센서·마이크·부저·Wi-Fi·전원 부품의 전압, 전류, 통신 방식, 부품 관계도와 전력 예산</p>
         </button>
       </div>
     </section>
@@ -204,6 +205,7 @@
       if (key === "prd") md = cleanPrd(md);
       // 한국어 바로 앞뒤에 붙은 **굵게** 표시는 마크다운 규칙상 인식되지 않는 경우가 있어
       // 코드 블록 밖에서만 직접 <strong>으로 바꾼다.
+      md = md.replace(/\]\(\.\.\//g, "](");   // 보고서 안의 ../images/ 경로를 홈페이지 기준으로 바꾼다
       md = md.split("```").map(function (part, i) {
         return i % 2 ? part : part.replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>");
       }).join("```");
@@ -218,6 +220,13 @@
         box.appendChild(t);
       });
       doc.querySelectorAll("a[href^='http']").forEach(function (a) { a.target = "_blank"; a.rel = "noopener"; });
+      // 그림을 누르면 원본 크기로 새 탭에서 열린다
+      doc.querySelectorAll("img").forEach(function (img) {
+        if (img.closest("a")) return;
+        var link = document.createElement("a");
+        link.href = img.getAttribute("src"); link.target = "_blank"; link.rel = "noopener";
+        img.parentNode.insertBefore(link, img); link.appendChild(img);
+      });
     }
 
     function show(key, push) {
