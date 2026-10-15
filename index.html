@@ -260,7 +260,7 @@
     <section class="block" id="reports">
       <div class="wrap">
         <h2>프로젝트 보고서</h2>
-        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 다섯 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
+        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 여섯 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
 
         <ul class="reports">
           <li>
@@ -318,6 +318,17 @@
               <li>5V 2A 전원, 밤 약 2.3W, 정전 시 배터리로 약 6시간</li>
             </ul>
             <a class="more" href="report.html#hw">하드웨어 보고서 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 06</span>
+            <h3>추론 엔진 선정</h3>
+            <ul>
+              <li>후보: ONNX Runtime · NCNN · OpenVINO · TFLite(LiteRT)</li>
+              <li>선택: ONNX Runtime — RV1106 NPU용 RKNN 변환의 출발점이자 정확도 검증 기준</li>
+              <li>기기에서는 ONNX → RKNN(INT8) 변환 모델이 NPU에서 실행</li>
+              <li>NCNN은 비상용 CPU 예비안, OpenVINO·LiteRT는 제외</li>
+            </ul>
+            <a class="more" href="report.html#engine">추론 엔진 보고서 보기</a>
           </li>
         </ul>
       </div>
