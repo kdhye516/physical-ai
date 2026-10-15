@@ -17,7 +17,7 @@
 | 비교 모델 | YOLO26n-cls (침대 영역 이미지를 바로 자세 4종으로 분류) |
 | 검토한 대안 | MediaPipe Pose → 주 모델에서 제외, 시제품 도구로 사용 (2-4 참고) |
 | 오디오 모델 | YOLO가 아닌 **경량 오디오 CNN** (로그 멜 스펙트로그램 입력) |
-| 배포 형태 | INT8 양자화 후 기기 NPU에서 실행 (LiteRT 등 NPU 벤더가 지원하는 형식으로 변환) |
+| 배포 형태 | ONNX로 내보낸 뒤 RKNN(INT8)으로 변환해 기기 NPU에서 실행 (추론 엔진 선정 근거는 `report/inference_engine.md`) |
 | 핵심 목표 | 엎드림 의심 재현율 95% 이상, 오탐 하루 1회 이하, 감지 후 5초 이내 경보 |
 
 ---
@@ -248,8 +248,8 @@ model.train(data="data/momcam_pose.yaml", imgsz=256,
 metrics = model.val(data="data/momcam_pose.yaml", split="test")
 print(metrics.box.map50, metrics.pose.map)    # 검출 mAP50, 키포인트 mAP50-95
 
-# 기기용 INT8 모델로 내보내기 (LiteRT/TFLite, 보정용 데이터로 val 이미지 사용)
-model.export(format="tflite", imgsz=256, int8=True, data="data/momcam_pose.yaml")
+# 기기 배포용 ONNX로 내보내기 → RKNN-Toolkit2로 RV1106용 INT8 변환 (report/inference_engine.md 5장)
+model.export(format="onnx", imgsz=(256, 192), opset=19, simplify=True)
 ```
 
 ---
