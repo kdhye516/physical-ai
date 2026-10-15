@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>맘캠 MomCam 보고서 | 나만의 피지컬 AI</title>
-  <meta name="description" content="맘캠 제품 요구사항(PRD), 데이터 전처리 설계, YOLO 모델 선정·학습·검증, 비전 AI 모델 6종 비교, 하드웨어 부품 구성 보고서">
+  <meta name="description" content="맘캠 제품 요구사항(PRD), 데이터 전처리 설계, YOLO 모델 선정·학습·검증, 비전 AI 모델 6종 비교, 하드웨어 부품 구성, 추론 엔진 선정 보고서">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <style>
     :root {
@@ -114,7 +114,7 @@
     <section class="wrap intro">
       <div class="eyebrow">PROJECT REPORT</div>
       <h1>맘캠 개발 보고서</h1>
-      <p>제품 기획(PRD)부터 데이터 전처리 설계, YOLO 기반 모델 선정·학습·검증 계획, 비전 AI 모델 비교, 하드웨어 부품 구성까지 정리했습니다. 아래에서 보고서를 고르면 전체 내용을 볼 수 있습니다.</p>
+      <p>제품 기획(PRD)부터 데이터 전처리 설계, YOLO 기반 모델 선정·학습·검증 계획, 비전 AI 모델 비교, 하드웨어 부품 구성, 추론 엔진 선정까지 정리했습니다. 아래에서 보고서를 고르면 전체 내용을 볼 수 있습니다.</p>
 
       <div class="cards" role="tablist" aria-label="보고서 선택">
         <button class="card" role="tab" id="tab-prd" data-doc="prd" aria-selected="true" aria-controls="doc">
@@ -141,6 +141,11 @@
           <span class="num">REPORT 05</span>
           <h2>하드웨어 부품 구성</h2>
           <p>SoC·센서·마이크·부저·Wi-Fi·전원 부품의 전압, 전류, 통신 방식, 부품 관계도와 전력 예산</p>
+        </button>
+        <button class="card" role="tab" id="tab-engine" data-doc="engine" aria-selected="false" aria-controls="doc">
+          <span class="num">REPORT 06</span>
+          <h2>추론 엔진 선정</h2>
+          <p>ONNX Runtime·NCNN·OpenVINO·LiteRT 비교, ONNX Runtime을 고른 이유와 RV1106 NPU 배포 흐름</p>
         </button>
       </div>
     </section>
@@ -174,7 +179,8 @@
       pre:   { path: "report/preprocessing.md", figures: true },
       model: { path: "report/model_yolo.md" },
       vision: { path: "report/vision_models.md" },
-      hw: { path: "report/hardware.md" }
+      hw: { path: "report/hardware.md" },
+      engine: { path: "report/inference_engine.md" }
     };
     var cache = {};
 
