@@ -260,7 +260,7 @@
     <section class="block" id="reports">
       <div class="wrap">
         <h2>프로젝트 보고서</h2>
-        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 여섯 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
+        <p class="lead">맘캠을 기획하고 AI 모델을 설계한 과정을 여덟 개의 보고서로 정리했습니다. 각 보고서의 전체 내용은 보고서 페이지에서 볼 수 있습니다.</p>
 
         <ul class="reports">
           <li>
@@ -329,6 +329,28 @@
               <li>NCNN은 비상용 CPU 예비안, OpenVINO·LiteRT는 제외</li>
             </ul>
             <a class="more" href="report.html#engine">추론 엔진 보고서 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 07</span>
+            <h3>SBC·MCU 부품 선정</h3>
+            <ul>
+              <li>SBC: Radxa ROCK 3C (RK3566, NPU 1 TOPS, RAM 4GB)</li>
+              <li>MCU: STM32G031 — 경보 부저·LED·버튼, SBC 감시</li>
+              <li>SBC가 멈춰도 MCU가 "감시 중단" 경보</li>
+              <li>양산 칩은 RV1106G3(1 TOPS, 256MB)로 상향</li>
+            </ul>
+            <a class="more" href="report.html#sbc">SBC·MCU 보고서 보기</a>
+          </li>
+          <li>
+            <span class="num">REPORT 08</span>
+            <h3>SBC 컨테이너 구조</h3>
+            <ul>
+              <li>기능별 컨테이너 7개 (camera·vision·audio·guardian 등)</li>
+              <li>영상·소리 컨테이너는 인터넷이 막힌 내부 네트워크에만 연결</li>
+              <li>영상은 공유 메모리, 이벤트는 내부 MQTT로 전달</li>
+              <li>고장 상황별 동작과 docker-compose 설계 포함</li>
+            </ul>
+            <a class="more" href="report.html#container">컨테이너 보고서 보기</a>
           </li>
         </ul>
       </div>
